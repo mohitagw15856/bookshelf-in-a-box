@@ -315,12 +315,25 @@ cat <<EOF
   ${BOLD}Read on your phone / tablet / e-reader (OPDS):${RESET}
      ${BLUE}http://${LOCAL_IP:-SERVER-IP}:${PORT}/opds${RESET}
 
-  Handy commands:
-     Update:   ${DIM}./scripts/update.sh${RESET}
-     Back up:  ${DIM}./scripts/backup.sh${RESET}
+  Handy commands (or run ${BOLD}make help${RESET}):
+     Status:   ${DIM}./bin/bookshelf status${RESET}
+     Add books:${DIM}./bin/bookshelf seed${RESET}   (free public-domain starters)
+     Phone QR: ${DIM}./bin/bookshelf qr${RESET}
+     Update:   ${DIM}./bin/bookshelf update${RESET}
+     Back up:  ${DIM}./bin/bookshelf backup${RESET}
      Logs:     ${DIM}${COMPOSE} logs -f${RESET}
      Stop:     ${DIM}${COMPOSE} down${RESET}
 
   Full guide (reading apps, remote access, troubleshooting): ${BOLD}README.md${RESET}
 
 EOF
+
+# Offer to open the friendly first-run guide in a browser.
+WELCOME="$SCRIPT_DIR/web/welcome.html"
+if [ -f "$WELCOME" ]; then
+  WELCOME_URL="file://${WELCOME}?ip=${LOCAL_IP:-localhost}&port=${PORT}"
+  if command -v xdg-open >/dev/null 2>&1; then xdg-open "$WELCOME_URL" >/dev/null 2>&1 &
+  elif command -v open >/dev/null 2>&1; then open "$WELCOME_URL" >/dev/null 2>&1 &
+  else info "Tip: open ${BOLD}web/welcome.html${RESET} for a visual setup guide (with a QR code)."
+  fi
+fi

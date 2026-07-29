@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+#
+# bookshelf — a friendly wrapper around the everyday commands.
+#
+#   ./bin/bookshelf <command>
+#
+# Put bin/ on your PATH (or run via `make`) and you get short, memorable
+# commands instead of long docker/compose incantations.
+#
+set -euo pipefail
+
+SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$SELF/.." && pwd)"
+cd "$ROOT"
+
+# --- colours ---------------------------------------------------------------
+if [ -t 1 ]; then B="$(printf '\033[1m')"; D="$(printf '\033[2m')"; G="$(printf '\033[32m')"; Y="$(printf '\033[33m')"; C="$(printf '\033[36m')"; R="$(printf '\033[0m')"; else B=""; D=""; G=""; Y=""; C=""; R=""; fi
+say(){ printf '%s\n' "$*"; }
+die(){ printf '%s✗%s %s\n' "$Y" "$R" "$*" >&2; exit 1; }
+
+# --- compose command -------------------------------------------------------
+if docker compose version >/dev/null 2>&1; then COMPOSE=(docker compose)
+elif command -v docker-compose >/dev/null 2>&1; then COMPOSE=(docker-compose)
+else die "Docker Compose not found. Install Docker, then run ./setup.sh."; fi
+
+# read PORT from .env (default 8083)
+port(){ if [ -f .env ]; then grep -E '^PORT=' .env | tail -1 | cut -d= -f2; fi; }
+PORT="$(port)"; PORT="${PORT:-8083}"
+
+# best-effort local IP (same logic as setup.sh)
+local_ip(){
+  local ip=""
+  if command -v hostname >/dev/null 2>&1; then ip="$(hostname -I 2>/dev/null | awk '{print $1}')" || true; fi
+  if [ -z "$ip" ] && [ "$(uname -s)" = "Darwin" ]; then for i in en0 en1; do ip="$(ipconfig getifaddr "$i" 2>/dev/null || true)"; [ -n "$ip" ] && break; done; fi
+  if [ -z "$ip" ] && command -v ip >/dev/null 2>&1; then ip="$(ip route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src"){print $(i+1);exit}}')" || true; fi
+  printf '%s' "$ip"
+}
+
+open_url(){
+  local url="$1"
+  if command -v xdg-open >/dev/null 2>&1; then xdg-open "$url" >/dev/null 2>&1 &
+  elif command -v open >/dev/null 2>&1; then open "$url" >/dev/null 2>&1 &
+  else return 1; fi
+}
+
+usage(){
+  cat <<EOF
+${B}📚 bookshelf${R} — self-hosted ebook library helper
+
+${B}Usage:${R} ./bin/bookshelf ${C}<command>${R}
+
+${B}Everyday${R}
+  ${C}up${R}          Start the library (docker compose up -d)
+  ${C}down${R}        Stop it (your data is kept)
+  ${C}restart${R}     Restart the container
+  ${C}status${R}      Health, book count, disk, last backup
+  ${C}logs${R}        Follow the container logs
+  ${C}open${R}        Open the library in your browser
+  ${C}wizard${R}      Open the first-run setup guide (change password, add a book)
+
+${B}Library${R}
+  ${C}qr${R}          Show a QR code to add the library on your phone (OPDS)
+  ${C}seed${R}        Download a few free public-domain books to get started
+  ${C}backup${R}      Make a timestamped backup now
+  ${C}restore${R}     Restore the library from a backup
+
+${B}Maintenance${R}
+  ${C}update${R}      Pull the latest image and recreate (data preserved)
+
+${B}Add-ons (optional overlays)${R}
+  ${C}tailscale up|down${R}   Read from anywhere, privately (needs TS_AUTHKEY in .env)
+  ${C}caddy up|down${R}       Add HTTPS via a local Caddy reverse proxy
+  ${C}backups on|off${R}      Run automatic nightly backups in the background
+
+Run ${C}./setup.sh${R} first if you haven't set things up yet.
+EOF
+}
+
+need_setup(){ [ -f docker-compose.yml ] || die "Run this from the bookshelf-in-a-box folder."; }
+
+cmd="${1:-help}"; shift || true
+case "$cmd" in
+  up)       need_setup; "${COMPOSE[@]}" up -d; say "${G}✓${R} Library running at ${C}http://localhost:${PORT}${R}";;
+  down)     need_setup; "${COMPOSE[@]}" down; say "${G}✓${R} Stopped. Your data is safe in ./data";;
+  restart)  need_setup; "${COMPOSE[@]}" restart;;
+  logs)     need_setup; "${COMPOSE[@]}" logs -f;;
+  ps)       need_setup; "${COMPOSE[@]}" ps;;
+  status)   exec "$ROOT/scripts/status.sh" "$@";;
+  backup)   exec "$ROOT/scripts/backup.sh" "$@";;
+  restore)  exec "$ROOT/scripts/restore.sh" "$@";;
+  update)   exec "$ROOT/scripts/update.sh" "$@";;
+  seed)     exec "$ROOT/scripts/seed-library.sh" "$@";;
+  open)
+     ip="$(local_ip)"; url="http://localhost:${PORT}"
+     say "Opening ${C}${url}${R}"; open_url "$url" || say "Visit: $url"
+     [ -n "$ip" ] && say "On other devices: ${C}http://${ip}:${PORT}${R}";;
+  wizard)
+     ip="$(local_ip)"; ip="${ip:-localhost}"
+     f="file://${ROOT}/web/welcome.html?ip=${ip}&port=${PORT}"
+     say "Opening the setup guide…"; open_url "$f" || say "Open this file in a browser: ${ROOT}/web/welcome.html";;
+  qr)
+     ip="$(local_ip)"; ip="${ip:-YOUR-SERVER-IP}"
+     url="http://${ip}:${PORT}/opds"
+     say ""; say "  ${B}Add your library on your phone / e-reader (OPDS):${R}"; say "  ${C}${url}${R}"; say ""
+     if command -v qrencode >/dev/null 2>&1; then qrencode -t ANSIUTF8 "$url"
+     else
+       say "  ${D}(Install 'qrencode' for an inline QR, or:)${R}"
+       say "  Run ${C}./bin/bookshelf wizard${R} to see a scannable QR in your browser."
+     fi;;
+  tailscale)
+     sub="${1:-up}"
+     case "$sub" in
+       up)   "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.tailscale.yml up -d
+             say "${G}✓${R} Tailscale add-on started. If you didn't set TS_AUTHKEY, find the login link with:"
+             say "   ${C}${COMPOSE[*]} logs tailscale${R}";;
+       down) "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.tailscale.yml down;;
+       *) die "Usage: bookshelf tailscale up|down";;
+     esac;;
+  caddy)
+     sub="${1:-up}"
+     case "$sub" in
+       up)   "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.caddy.yml up -d; say "${G}✓${R} HTTPS proxy started (see caddy/Caddyfile).";;
+       down) "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.caddy.yml down;;
+       *) die "Usage: bookshelf caddy up|down";;
+     esac;;
+  backups)
+     sub="${1:-on}"
+     case "$sub" in
+       on)  "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.backup.yml up -d backup; say "${G}✓${R} Nightly backups enabled.";;
+       off) "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.backup.yml stop backup && "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.backup.yml rm -f backup; say "${G}✓${R} Automatic backups disabled.";;
+       *) die "Usage: bookshelf backups on|off";;
+     esac;;
+  help|-h|--help) usage;;
+  *) say "Unknown command: ${cmd}"; say ""; usage; exit 1;;
+esac

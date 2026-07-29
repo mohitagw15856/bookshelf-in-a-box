@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome to your bookshelf</title>
+<style>
+:root{
+  --bg:#0c1020; --surface:#141a2e; --surface-2:#1b2237; --border:#28304d;
+  --ink:#e9edfb; --ink-2:#c2c9e4; --muted:#8b93b4;
+  --accent:#7aa2ff; --good:#34d399; --warn:#fbbf24;
+  --grad:linear-gradient(135deg,#38bdf8,#818cf8);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"SFMono-Regular",Consolas,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--sans);color:var(--ink);line-height:1.55;
+  background:
+    radial-gradient(900px 500px at 15% -10%,rgba(129,140,248,.22),transparent 60%),
+    radial-gradient(700px 460px at 110% 0%,rgba(56,189,248,.16),transparent 55%),
+    var(--bg);min-height:100vh}
+.wrap{max-width:760px;margin:0 auto;padding:40px 20px 70px}
+.head{text-align:center;margin-bottom:30px}
+.mark{width:64px;height:64px;border-radius:18px;background:var(--grad);display:inline-grid;place-items:center;font-size:32px;margin-bottom:12px}
+h1{font:800 30px/1.15 var(--sans);margin:0 0 6px;letter-spacing:-.02em}
+.head p{color:var(--muted);margin:0;font-size:15px}
+.step{display:grid;grid-template-columns:44px 1fr;gap:16px;background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:20px 22px;margin-bottom:16px;box-shadow:0 12px 30px -18px rgba(0,0,0,.6)}
+.num{width:38px;height:38px;border-radius:11px;background:var(--surface-2);border:1px solid var(--border);
+  display:grid;place-items:center;font-weight:800;color:var(--accent);font-size:16px}
+.step h2{font:700 18px/1.3 var(--sans);margin:0 0 6px}
+.step p{margin:0 0 8px;color:var(--ink-2);font-size:14.5px}
+.step p:last-child{margin-bottom:0}
+code,.kbd{font-family:var(--mono);font-size:13px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:2px 7px;color:var(--ink)}
+a{color:var(--accent)}
+.warn{background:color-mix(in srgb,var(--warn) 15%,transparent);border:1px solid color-mix(in srgb,var(--warn) 45%,transparent)}
+.warn .num{color:#0c1020;background:var(--warn);border-color:var(--warn)}
+.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;background:var(--grad);color:#0c1020;
+  font-weight:700;font-size:14px;padding:10px 16px;border-radius:10px;margin-top:4px}
+.btn.ghost{background:var(--surface-2);color:var(--ink);border:1px solid var(--border)}
+.urlbox{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.urlbox code{font-size:14px;padding:8px 12px}
+.copy{cursor:pointer;border:1px solid var(--border);background:var(--surface-2);color:var(--ink);border-radius:8px;padding:8px 10px;font-size:13px}
+.qr-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:10px}
+#qr{background:#fff;border-radius:12px;padding:10px;width:150px;height:150px}
+.apps{display:flex;flex-direction:column;gap:6px;font-size:13.5px;color:var(--ink-2)}
+.apps b{color:var(--ink)}
+.foot{text-align:center;color:var(--muted);font-size:13px;margin-top:26px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(16px);background:#e9edfb;color:#0c1020;
+  padding:11px 16px;border-radius:10px;font-weight:600;font-size:13px;opacity:0;transition:.25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media (max-width:520px){.step{grid-template-columns:1fr}.num{margin-bottom:2px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="mark">📚</div>
+    <h1>Your bookshelf is ready!</h1>
+    <p>Three quick things and you're all set. This page runs locally — nothing is sent anywhere.</p>
+  </div>
+
+  <div class="step">
+    <div class="num">✓</div>
+    <div>
+      <h2>Open your library</h2>
+      <p>It's running on this computer at:</p>
+      <div class="urlbox"><code id="localUrl">http://localhost:8083</code><button class="copy" data-copy="localUrl">Copy</button></div>
+      <p id="lanLine" style="color:var(--muted)"></p>
+      <a class="btn" id="openBtn" href="http://localhost:8083" target="_blank" rel="noopener">Open the library →</a>
+    </div>
+  </div>
+
+  <div class="step warn">
+    <div class="num">1</div>
+    <div>
+      <h2>⚠️ Change the default password — right away</h2>
+      <p>Everyone knows the default login, so change it before anything else. Sign in with
+      <code>admin</code> / <code>admin123</code>, then go to
+      <b>Admin&nbsp;→&nbsp;Users&nbsp;→&nbsp;edit “admin”</b> and set a strong password.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">2</div>
+    <div>
+      <h2>Add your first book</h2>
+      <p>Drop any <code>.epub</code>, <code>.mobi</code>, or <code>.pdf</code> into your
+      <b>ingest folder</b> and it imports itself within a minute — converted, given a cover, and filed.</p>
+      <p style="color:var(--muted)">No books yet? Run <code>./bin/bookshelf seed</code> to grab a few free classics.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">3</div>
+    <div>
+      <h2>Read on your phone &amp; e-reader</h2>
+      <p>Scan this with your phone, or paste the OPDS address into a reading app (same WiFi):</p>
+      <div class="qr-wrap">
+        <canvas id="qr" width="150" height="150" aria-label="QR code linking to your OPDS library feed"></canvas>
+        <div class="apps">
+          <div class="urlbox"><code id="opdsUrl">http://SERVER-IP:8083/opds</code><button class="copy" data-copy="opdsUrl">Copy</button></div>
+          <div><b>KOReader</b> — OPDS catalog → add → paste URL</div>
+          <div><b>Moon+ Reader</b> (Android) — Net Library → Calibre/OPDS</div>
+          <div><b>Yomu / Panels</b> (iOS) — add OPDS catalog</div>
+          <div style="color:var(--muted)">Kindle? Use “Send to Kindle” from any book page.</div>
+        </div>
+      </div>
+      <p style="margin-top:12px">Want it away from home too? See <b>“Access from anywhere”</b> in the README (free, private, via Tailscale).</p>
+    </div>
+  </div>
+
+  <p class="foot">You can reopen this guide any time with <code>./bin/bookshelf wizard</code>.</p>
+</div>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script src="qr.js"></script>
+<script>
+(function(){
+  "use strict";
+  var params = new URLSearchParams(location.search);
+  var ip = params.get("ip") || "";
+  var port = params.get("port") || "8083";
+  var host = ip && ip !== "localhost" ? ip : "";
+
+  var localUrl = "http://localhost:" + port;
+  document.getElementById("localUrl").textContent = localUrl;
+  var openBtn = document.getElementById("openBtn");
+  openBtn.href = localUrl;
+
+  if (host) {
+    document.getElementById("lanLine").innerHTML =
+      'On other devices on your WiFi: <code>http://' + host + ':' + port + '</code>';
+  }
+
+  var opdsHost = host || "SERVER-IP";
+  var opdsUrl = "http://" + opdsHost + ":" + port + "/opds";
+  document.getElementById("opdsUrl").textContent = opdsUrl;
+
+  // Draw the QR (falls back gracefully if qr.js failed to load).
+  try {
+    if (window.QR) {
+      QR.drawCanvas(document.getElementById("qr"), opdsUrl, { px: 150, border: 2, dark: "#12172a", light: "#ffffff" });
+    }
+  } catch (e) { /* non-fatal — the URL is shown as text anyway */ }
+
+  // Copy buttons
+  var toast = document.getElementById("toast");
+  function flash(){ toast.classList.add("show"); clearTimeout(flash._t); flash._t = setTimeout(function(){ toast.classList.remove("show"); }, 1500); }
+  document.querySelectorAll(".copy").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var txt = document.getElementById(btn.dataset.copy).textContent;
+      if (navigator.clipboard) navigator.clipboard.writeText(txt).then(flash, flash); else flash();
+    });
+  });
+})();
+</script>
+</body>
+</html>

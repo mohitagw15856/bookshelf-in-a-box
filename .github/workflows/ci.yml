@@ -18,13 +18,13 @@ jobs:
         uses: ludeeus/action-shellcheck@master
         with:
           scandir: '.'
-          # Only lint the scripts we ship; -x follows sourced files.
-          additional_files: 'setup.sh'
+          # -x follows sourced files; SC1091 = can't follow non-constant source.
+          additional_files: 'bookshelf'
         env:
           SHELLCHECK_OPTS: -x -e SC1091
 
   compose:
-    name: Validate docker-compose.yml
+    name: Validate Compose files
     runs-on: ubuntu-latest
     steps:
       - name: Check out the code
@@ -33,8 +33,69 @@ jobs:
       - name: Create .env from example
         run: cp .env.example .env
 
-      - name: Validate the Compose file
+      - name: Validate the base Compose file
         run: docker compose config
 
       - name: Confirm the expected image is referenced
         run: docker compose config | grep -q 'crocodilestick/calibre-web-automated'
+
+      - name: Validate the Caddy (HTTPS) overlay
+        run: docker compose -f docker-compose.yml -f docker-compose.caddy.yml config
+
+      - name: Validate the backup overlay
+        run: docker compose -f docker-compose.yml -f docker-compose.backup.yml config
+
+      - name: Validate the Tailscale overlay
+        run: TS_AUTHKEY=dummy docker compose -f docker-compose.yml -f docker-compose.tailscale.yml config
+
+  qr:
+    name: Verify QR generator
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Sanity-check the QR encoder loads and produces a matrix
+        run: |
+          node -e '
+            const QR = require("./web/qr.js");
+            const q = QR.generate("http://192.168.1.50:8083/opds", "M");
+            if (!q.modules || q.size !== q.version*4+17) { console.error("bad QR"); process.exit(1); }
+            const svg = QR.toSvg("http://localhost:8083/opds");
+            if (!svg.startsWith("<svg")) { console.error("bad SVG"); process.exit(1); }
+            console.log("QR ok: version", q.version, "size", q.size);
+          '
+
+  smoke:
+    name: Smoke test (real container)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Create .env from example
+        run: cp .env.example .env
+
+      - name: Start the library
+        run: docker compose up -d
+
+      - name: Wait for it to become healthy and answer
+        run: |
+          for i in $(seq 1 40); do
+            if curl -fsS http://localhost:8083/ >/dev/null 2>&1; then
+              echo "Web UI is up."; exit 0
+            fi
+            sleep 6
+          done
+          echo "::error::Container did not answer in time"; exit 1
+
+      - name: Check the OPDS endpoint responds
+        run: curl -fsS -o /dev/null http://localhost:8083/opds || curl -fsS -o /dev/null -u admin:admin123 http://localhost:8083/opds
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs --tail 80
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

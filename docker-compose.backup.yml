@@ -1,0 +1,40 @@
+# bookshelf-in-a-box — automatic nightly backups (optional)
+#
+# Runs a tiny always-on container that backs up your library + config on a
+# schedule (default 3 AM) and keeps the newest few. Zero host setup, works
+# the same on macOS, Linux, and Raspberry Pi.
+#
+# Turn it on:
+#   docker compose -f docker-compose.yml -f docker-compose.backup.yml up -d backup
+# or:
+#   ./bin/bookshelf backups on
+#
+# Configure in .env (optional):
+#   BACKUP_CRON=0 3 * * *     # when to run (cron format)
+#   BACKUP_KEEP=7             # how many backups to keep
+
+services:
+  backup:
+    image: alpine:3.20
+    container_name: bookshelf-backup
+    restart: unless-stopped
+    environment:
+      - BACKUP_CRON=${BACKUP_CRON:-0 3 * * *}
+      - KEEP=${BACKUP_KEEP:-7}
+      - TZ=${TZ:-Etc/UTC}
+    volumes:
+      - ./data/config:/data/config:ro
+      - ./data/library:/data/library:ro
+      - ./backups:/backups
+      - ./scripts/backup-container.sh:/usr/local/bin/backup.sh:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        cp /usr/local/bin/backup.sh /tmp/backup.sh
+        chmod +x /tmp/backup.sh
+        echo "$${BACKUP_CRON} KEEP=$${KEEP} /bin/sh /tmp/backup.sh >> /backups/backup.log 2>&1" > /etc/crontabs/root
+        echo "bookshelf: nightly backups scheduled ($${BACKUP_CRON}), keeping $${KEEP}"
+        # Run one immediately so there's always at least one backup.
+        KEEP=$${KEEP} /bin/sh /tmp/backup.sh >> /backups/backup.log 2>&1 || true
+        exec crond -f -l 8

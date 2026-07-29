@@ -1,0 +1,40 @@
+# bookshelf-in-a-box — HTTPS via Caddy (optional)
+#
+# Adds a small Caddy reverse proxy that serves your library over HTTPS with
+# a friendly hostname (default: https://bookshelf.local), so browsers stop
+# showing the "Not secure" warning on your LAN.
+#
+# Use it as an overlay on top of the main compose file:
+#   docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d
+# or:
+#   ./bin/bookshelf caddy up
+#
+# Notes for beginners:
+#  • Caddy makes its own local certificate authority. The first time, your
+#    browser won't trust it — see the README "HTTPS" section for the one-time
+#    step to trust Caddy's root certificate (or just click through the warning
+#    on your own devices).
+#  • For "bookshelf.local" to resolve, most phones/Macs find it automatically
+#    (mDNS). On other machines, add a line to your hosts file pointing
+#    bookshelf.local at this server's IP. Access by IP also works.
+#  • Plain http://<ip>:8083 keeps working too — this only ADDS HTTPS.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: bookshelf-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./data/caddy/data:/data
+      - ./data/caddy/config:/config
+    depends_on:
+      - calibre-web-automated
+
+  calibre-web-automated:
+    # Let the app know it's behind one reverse proxy.
+    environment:
+      - TRUSTED_PROXY_COUNT=1
