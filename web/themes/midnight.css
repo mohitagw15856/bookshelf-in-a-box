@@ -1,0 +1,41 @@
+/* bookshelf theme: Midnight — deep indigo night with a sky-blue accent
+   (matches the bookshelf-in-a-box brand). */
+:root { --bsx: #7aa2ff; --bsx-2: #a78bfa; --ink: #e9edfb; }
+
+body, .container-fluid, #main, .discover, .home {
+  background:
+    radial-gradient(1000px 500px at 15% -10%, rgba(129,140,248,.14), transparent 60%),
+    radial-gradient(800px 460px at 110% 0%, rgba(56,189,248,.10), transparent 55%),
+    #0c1020 !important;
+  color: var(--ink) !important;
+}
+h1,h2,h3,h4,.discover h2 { color: #f2f4ff !important; }
+a { color: var(--bsx) !important; }
+a:hover { color: var(--bsx-2) !important; }
+
+.navbar-default, .navbar {
+  background: rgba(20,26,46,.92) !important;
+  border-color: #28304d !important;
+  backdrop-filter: blur(6px);
+}
+.navbar-default .navbar-nav > li > a, .navbar-default .navbar-brand { color: #d7ddf5 !important; }
+
+.btn-primary { background: var(--bsx) !important; border-color: var(--bsx) !important; color: #08101f !important; }
+.btn-default, .btn { background: #181d34 !important; color: var(--ink) !important; border-color: #2b3352 !important; }
+
+.panel, .well, .book, .list-group-item, .modal-content, .dropdown-menu {
+  background: #141a2e !important; border-color: #28304d !important; color: var(--ink) !important;
+}
+.book .cover img, .cover img, .bookcover, img.thumbnail {
+  border-radius: 10px !important;
+  box-shadow: 0 14px 34px -16px rgba(0,0,0,.8) !important;
+  transition: transform .2s ease !important;
+}
+.book:hover .cover img, .book:hover img.thumbnail { transform: translateY(-5px) scale(1.02) !important; }
+
+input, select, textarea, .form-control {
+  background: #0f1526 !important; color: var(--ink) !important; border-color: #2b3352 !important;
+}
+.progress { background: #1a2138 !important; }
+.progress-bar { background: linear-gradient(90deg,#38bdf8,#818cf8) !important; }
+hr { border-color: #28304d !important; }

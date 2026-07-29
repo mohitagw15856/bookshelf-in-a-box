@@ -1,0 +1,31 @@
+# bookshelf-in-a-box — visual theme for the real app (optional)
+#
+# Restyles the actual Calibre-Web reading UI by injecting a custom stylesheet
+# through a small nginx reverse proxy — the app itself is untouched.
+#
+# Pick a theme with the THEME variable (in .env or inline) and start it:
+#   THEME=oled ./bin/bookshelf theme oled       # true-black
+#   ./bin/bookshelf theme sepia                  # warm paper
+#   ./bin/bookshelf theme midnight               # indigo night (brand)
+#   ./bin/bookshelf theme contrast               # high contrast
+#
+# Available themes live in web/themes/*.css — copy one to make your own.
+
+services:
+  theme:
+    image: nginx:alpine
+    container_name: bookshelf-theme
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8083}:8083"
+    volumes:
+      - ./web/nginx/theme.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./web/themes/${THEME:-oled}.css:/theme/theme.css:ro
+    depends_on:
+      - calibre-web-automated
+
+  calibre-web-automated:
+    # The proxy now owns the published port; the app stays internal.
+    ports: !reset []
+    environment:
+      - TRUSTED_PROXY_COUNT=1

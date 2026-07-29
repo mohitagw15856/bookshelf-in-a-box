@@ -57,6 +57,12 @@ jobs:
       - name: Validate the auto-update (Watchtower) overlay
         run: docker compose -f docker-compose.yml -f docker-compose.watchtower.yml config
 
+      - name: Validate the gallery dashboard overlay
+        run: docker compose -f docker-compose.yml -f docker-compose.dashboard.yml config
+
+      - name: Validate the theme overlay
+        run: docker compose -f docker-compose.yml -f docker-compose.theme.yml config
+
   qr:
     name: Verify QR generator
     runs-on: ubuntu-latest
