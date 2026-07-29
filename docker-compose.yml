@@ -22,6 +22,10 @@ services:
       - CWA_AUTOCONVERT=true
       # Set to true in .env only when your library is on a network share.
       - NETWORK_SHARE_MODE=${NETWORK_SHARE_MODE:-false}
+      # Optional: "poll" makes the ingest watcher reliable on network shares.
+      - CWA_WATCH_MODE=${CWA_WATCH_MODE:-}
+      # Optional: free Hardcover.app token for auto-fetching covers/metadata.
+      - HARDCOVER_TOKEN=${HARDCOVER_TOKEN:-}
 
     ports:
       # host:container  ->  visit http://localhost:<PORT>

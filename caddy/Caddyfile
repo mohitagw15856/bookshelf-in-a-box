@@ -1,0 +1,29 @@
+# bookshelf-in-a-box — Caddy reverse proxy config
+#
+# Serves the library over HTTPS on your LAN using Caddy's internal CA.
+# Reachable as https://bookshelf.local  AND  https://<this-server-ip>.
+#
+# Change the hostname by setting CADDY_HOST in your .env (defaults to
+# bookshelf.local) and restarting the caddy add-on.
+
+{
+	# Use Caddy's built-in local certificate authority (no public domain,
+	# no Let's Encrypt, nothing exposed to the internet).
+	local_certs
+	# Quieten the access log a little.
+	log {
+		level ERROR
+	}
+}
+
+# Friendly hostname (mDNS-friendly on phones and Macs).
+{$CADDY_HOST:bookshelf.local} {
+	tls internal
+	reverse_proxy calibre-web-automated:8083
+}
+
+# Also answer plain HTTPS-by-IP so you don't need the hostname to work.
+https:// {
+	tls internal
+	reverse_proxy calibre-web-automated:8083
+}

@@ -101,6 +101,9 @@ The script checks Docker, creates your folders, asks a couple of easy questions 
 
 Drop any `.epub`, `.mobi`, `.pdf`, `.azw3`, etc. into the **`data/ingest`** folder. Within a minute it's converted, organised, and showing in your library. ✨
 
+> 📚 **No books yet?** Run `./bin/bookshelf seed` to download a handful of free, public-domain classics to get started.
+> 🧭 **Prefer a visual guide?** `./setup.sh` opens a friendly first-run page (with a QR code for your phone). Reopen it any time with `./bin/bookshelf wizard`.
+
 Then open **http://localhost:8083** and log in:
 
 | | |
@@ -209,6 +212,60 @@ Read a few pages on your phone, then pick up exactly where you left off on your 
 
 ---
 
+## 🧰 Power-ups (optional extras)
+
+Everything below is **optional** — the core library works great without any of it. There's a tiny helper so you never have to memorise Docker commands:
+
+```bash
+./bin/bookshelf help     # everything it can do
+make help                # the same, via make
+```
+
+| Command | What it does |
+|---|---|
+| `./bin/bookshelf status` | Health, book count, disk space, last backup |
+| `./bin/bookshelf seed` | Download free public-domain starter books |
+| `./bin/bookshelf qr` | Show a QR code to add the library on your phone |
+| `./bin/bookshelf open` / `wizard` | Open the library / the visual setup guide |
+| `./bin/bookshelf backup` / `restore` | Back up now / restore from a backup |
+| `./bin/bookshelf update` | Update to the latest version (data preserved) |
+
+### 📚 Starter library
+Empty shelf on day one? `./bin/bookshelf seed` drops a handful of beloved public-domain classics — *Pride and Prejudice*, *Frankenstein*, *Sherlock Holmes*, *Alice in Wonderland*, and more — straight into your ingest folder from [Project Gutenberg](https://www.gutenberg.org/). It's safe to re-run; it skips anything it already fetched.
+
+### 🔒 Read from anywhere, in one command (Tailscale)
+Instead of the manual Tailscale steps above, run the bundled add-on:
+
+```bash
+# put a free auth key in .env as TS_AUTHKEY=...  (login.tailscale.com/admin/settings/keys)
+./bin/bookshelf tailscale up
+```
+
+Your library joins your private tailnet as `http://bookshelf:8083`, reachable from any of your devices anywhere — and still **never exposed to the open internet**. (Leave `TS_AUTHKEY` blank and grab the login link with `docker compose logs tailscale`.)
+
+### 🔐 HTTPS on your home network (Caddy)
+Tired of the browser's "Not secure" note on your LAN? Add a small HTTPS reverse proxy:
+
+```bash
+./bin/bookshelf caddy up      # serves https://bookshelf.local
+```
+
+Caddy mints its own local certificate. The first time, trust its root certificate once (see `data/caddy/data/...` or just click through on your own devices), or set a custom hostname with `CADDY_HOST` in `.env`. Plain `http://<ip>:8083` keeps working alongside it.
+
+### 💾 Automatic nightly backups
+Turn on a set-and-forget background backup:
+
+```bash
+./bin/bookshelf backups on    # nightly, keeps the newest few
+```
+
+Tune `BACKUP_CRON` and `BACKUP_KEEP` in `.env`. Restore any snapshot interactively with `./bin/bookshelf restore` — it even takes a safety snapshot of your current data first, so a restore is always undoable.
+
+### 🖼 Nicer covers &amp; metadata
+Set a free [Hardcover](https://hardcover.app/) API token as `HARDCOVER_TOKEN` in `.env` and the server will auto-fetch covers and metadata for imported books.
+
+---
+
 ## 🛠 Troubleshooting
 
 <details>
@@ -227,13 +284,13 @@ Read a few pages on your phone, then pick up exactly where you left off on your 
 Network shares don't support the same file-change notifications as local disks, so the auto-import watcher can miss new files. Fix it by enabling network-share mode:
 
 1. Open the **`.env`** file.
-2. Set:
+2. Set both:
    ```
    NETWORK_SHARE_MODE=true
+   CWA_WATCH_MODE=poll
    ```
-3. Recreate the container: `docker compose up -d` (or `./scripts/update.sh`).
-
-This switches the watcher to a polling mode that works reliably on mounted shares.
+   `NETWORK_SHARE_MODE` disables SQLite write-ahead logging (needed on NFS/SMB), and `CWA_WATCH_MODE=poll` switches the ingest watcher to polling, which reliably notices new files on mounted shares.
+3. Recreate the container: `./bin/bookshelf up` (or `docker compose up -d`).
 </details>
 
 <details>

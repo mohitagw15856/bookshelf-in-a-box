@@ -1,0 +1,46 @@
+# bookshelf-in-a-box — Tailscale add-on (optional)
+#
+# Read your library from anywhere in the world, privately and encrypted,
+# WITHOUT exposing anything to the open internet.
+#
+# Use it as an overlay on top of the main compose file:
+#   docker compose -f docker-compose.yml -f docker-compose.tailscale.yml up -d
+# or simply:
+#   ./bin/bookshelf tailscale up
+#
+# 1. Create a free account at https://tailscale.com
+# 2. Make an auth key: https://login.tailscale.com/admin/settings/keys
+# 3. Put it in .env as  TS_AUTHKEY=tskey-auth-xxxxx
+#    (or leave it blank and grab the login link from `... logs tailscale`)
+# 4. Your library is then reachable at  http://bookshelf:8083  from any of
+#    your Tailscale-connected devices.
+
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: bookshelf-tailscale
+    hostname: ${TS_HOSTNAME:-bookshelf}
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY:-}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+    volumes:
+      - ./data/tailscale:/var/lib/tailscale
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    ports:
+      # Publish the library on the host too, so local WiFi access still works.
+      - "${PORT:-8083}:8083"
+    restart: unless-stopped
+
+  calibre-web-automated:
+    # Route the app's traffic through the Tailscale container so it appears
+    # on your private tailnet as "bookshelf".
+    network_mode: service:tailscale
+    # The port is now published by the tailscale service above.
+    ports: !reset []
+    environment:
+      - TRUSTED_PROXY_COUNT=1
