@@ -1,0 +1,69 @@
+name: 🙋 Setup help
+description: You're stuck getting it running — we're happy to help!
+title: "[Help]: "
+labels: ["help wanted", "setup"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        No question is too basic here — this project is built for beginners.
+        Fill in what you can and we'll get you sorted. 🙂
+
+        💡 It's worth skimming the **Troubleshooting** section of the README
+        first; it covers the most common snags (books not importing, port
+        conflicts, network shares, Send-to-Kindle).
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to do?
+      placeholder: I want to read my library on my iPad / set up remote access / add a book...
+    validations:
+      required: true
+
+  - type: textarea
+    id: stuck
+    attributes:
+      label: Where are you stuck?
+      description: What step were you on, and what happened (or didn't)?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: What are you running it on?
+      options:
+        - An old laptop (Linux)
+        - An old laptop / desktop (Windows)
+        - A Mac
+        - A Raspberry Pi
+        - A mini PC
+        - A NAS (Synology, etc.)
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: reader
+    attributes:
+      label: Which device(s) do you want to read on?
+      multiple: true
+      options:
+        - Web browser
+        - Android phone/tablet
+        - iPhone / iPad
+        - Kindle
+        - Kobo / other e-reader
+        - KOReader
+    validations:
+      required: false
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried so far?
+      description: Any error messages? Paste them here (they'll be formatted as code).
+      render: shell
+    validations:
+      required: false

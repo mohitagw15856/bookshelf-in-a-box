@@ -1,0 +1,21 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="bookshelf-in-a-box logo">
+  <defs>
+    <linearGradient id="lg" x1="0" y1="0" x2="200" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="#0f172a"/>
+  <rect x="6" y="6" width="188" height="188" rx="40" fill="none" stroke="url(#lg)" stroke-width="3" opacity="0.7"/>
+  <!-- box flaps -->
+  <path d="M40 66 L70 40 L130 40 L160 66" fill="none" stroke="url(#lg)" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>
+  <!-- box body -->
+  <rect x="40" y="66" width="120" height="94" rx="10" fill="#0b1220" stroke="url(#lg)" stroke-width="5"/>
+  <!-- book spines -->
+  <rect x="58"  y="86" width="16" height="60" rx="3" fill="#f472b6"/>
+  <rect x="78"  y="78" width="16" height="68" rx="3" fill="#38bdf8"/>
+  <rect x="98"  y="90" width="16" height="56" rx="3" fill="#34d399"/>
+  <rect x="118" y="80" width="16" height="66" rx="3" fill="#fbbf24"/>
+  <!-- shelf -->
+  <rect x="52" y="146" width="96" height="7" rx="3.5" fill="url(#lg)"/>
+</svg>

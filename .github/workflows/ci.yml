@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  shellcheck:
+    name: Lint shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: '.'
+          # Only lint the scripts we ship; -x follows sourced files.
+          additional_files: 'setup.sh'
+        env:
+          SHELLCHECK_OPTS: -x -e SC1091
+
+  compose:
+    name: Validate docker-compose.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Create .env from example
+        run: cp .env.example .env
+
+      - name: Validate the Compose file
+        run: docker compose config
+
+      - name: Confirm the expected image is referenced
+        run: docker compose config | grep -q 'crocodilestick/calibre-web-automated'

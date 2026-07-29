@@ -1,0 +1,87 @@
+name: 🐞 Bug report
+description: Something isn't working the way it should.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill in as much as
+        you can — it helps us fix things faster.
+
+        > **Note:** If the problem is with the ebook server itself (reading,
+        > converting, the web UI) rather than this setup wrapper, it may belong
+        > upstream at
+        > [Calibre-Web-Automated](https://github.com/crocodilestick/Calibre-Web-Automated/issues).
+        > When in doubt, open it here and we'll help point the way.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug clearly.
+      placeholder: I ran ./setup.sh and it...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Clone the repo
+        2. Run ./setup.sh
+        3. ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux (x86)
+        - Linux (Raspberry Pi / ARM)
+        - macOS (Intel)
+        - macOS (Apple Silicon)
+        - Windows
+        - Other / NAS
+    validations:
+      required: true
+
+  - type: input
+    id: docker-version
+    attributes:
+      label: Docker version
+      description: Output of `docker --version`
+      placeholder: Docker version 27.x.x
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: |
+        Paste the output of `docker compose logs --tail 50` and any error
+        the setup script printed. This will be automatically formatted as code.
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I'm running the latest version (I tried `./scripts/update.sh` and re-ran setup).
+          required: false
+        - label: I searched existing issues and didn't find a duplicate.
+          required: false
