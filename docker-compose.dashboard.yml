@@ -1,0 +1,24 @@
+# bookshelf-in-a-box — visual gallery dashboard (optional)
+#
+# A cinematic view of your library: cover wall, 3D shelf, "Wrapped" recap,
+# insights (heatmap/charts), galaxy map, screensaver, poster & pairing card.
+# Served by a tiny nginx container from the covers you already have.
+#
+# Build the data, then start it:
+#   ./bin/bookshelf gallery          # writes data/gallery/library.json
+#   ./bin/bookshelf dashboard up     # → http://localhost:8084
+#
+# (./bin/bookshelf dashboard up runs the gallery step for you.)
+
+services:
+  dashboard:
+    image: nginx:alpine
+    container_name: bookshelf-dashboard
+    restart: unless-stopped
+    ports:
+      - "${DASHBOARD_PORT:-8084}:8084"
+    volumes:
+      - ./docs/gallery:/usr/share/nginx/html:ro
+      - ./data/gallery:/gallery-data:ro
+      - ./data/library:/covers:ro
+      - ./web/nginx/dashboard.conf:/etc/nginx/conf.d/default.conf:ro

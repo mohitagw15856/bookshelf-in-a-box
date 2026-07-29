@@ -229,6 +229,8 @@ make help                # the same, via make
 | `./bin/bookshelf seed` | Download free public-domain starter books |
 | `./bin/bookshelf import <path>` | Import a folder of books or an existing Calibre library |
 | `./bin/bookshelf stats` | Show library stats and write `data/stats.html` |
+| `./bin/bookshelf dashboard up` | Cinematic visual gallery of your library (port 8084) |
+| `./bin/bookshelf theme <name>` | Restyle the real app (oled/midnight/sepia/contrast) |
 | `./bin/bookshelf qr` | Show a QR code to add the library on your phone |
 | `./bin/bookshelf kindle` | Set up &amp; test Send-to-Kindle email |
 | `./bin/bookshelf open` / `wizard` | Open the library / the visual setup guide |
@@ -284,6 +286,25 @@ It only ever **copies** (never deletes the source), and skips anything it alread
 
 ### 📊 Library stats
 `./bin/bookshelf stats` prints a summary — total books, formats, top authors, recent additions — and writes a shareable `data/stats.html` you can open in any browser.
+
+### ✨ Cinematic visual gallery
+A gorgeous, self-hosted view of your collection built from your own covers:
+
+```bash
+./bin/bookshelf dashboard up      # → http://localhost:8084
+```
+
+You get eight views in one app: a **cover wall**, a draggable **3D shelf**, a Spotify-style **"Wrapped"** recap, **insights** (a books-added heatmap + charts), a **galaxy** map of authors, an ambient **screensaver** for a spare tablet/TV, a downloadable **mosaic poster**, and a **pairing card + share banner** (with a live QR). [Try it with sample data →](https://mohitagw15856.github.io/bookshelf-in-a-box/gallery/)
+
+### 🎨 Theme the actual app
+Restyle the real Calibre-Web reading UI — no fork, no rebuild:
+
+```bash
+./bin/bookshelf theme oled        # true-black · also: midnight | sepia | contrast
+./bin/bookshelf theme off         # back to default
+```
+
+A small nginx proxy injects a stylesheet from `web/themes/` — copy one to craft your own.
 
 ### ☁️ Off-site (cloud) backups
 Local backups protect against mistakes; off-site backups protect against a dead disk or a house fire. Uses [rclone](https://rclone.org/) (Google Drive, Backblaze B2, S3, Dropbox, …) in a container — nothing to install:

@@ -1,0 +1,33 @@
+/* bookshelf theme: Sepia — warm "paper" tones, gentle for long reading. */
+:root { --bsx: #a05a2c; --paper: #f3ead6; --ink: #3a3126; }
+
+body, .container-fluid, #main, .discover, .home {
+  background: var(--paper) !important;
+  color: var(--ink) !important;
+}
+h1,h2,h3,h4,.discover h2 { color: #2c2419 !important; }
+a { color: var(--bsx) !important; }
+a:hover { color: #7c3f16 !important; }
+
+.navbar-default, .navbar {
+  background: #ece0c6 !important;
+  border-color: #ddcfae !important;
+}
+.navbar-default .navbar-nav > li > a, .navbar-default .navbar-brand { color: #4a3f2e !important; }
+
+.btn-primary { background: var(--bsx) !important; border-color: var(--bsx) !important; color: #fff !important; }
+.btn-default, .btn { background: #eaddc2 !important; color: var(--ink) !important; border-color: #d8c9a6 !important; }
+
+.panel, .well, .book, .list-group-item, .modal-content, .dropdown-menu {
+  background: #fbf5e6 !important; border-color: #e2d4b3 !important; color: var(--ink) !important;
+}
+.book .cover img, .cover img, .bookcover, img.thumbnail {
+  border-radius: 8px !important;
+  box-shadow: 0 10px 24px -12px rgba(80,60,30,.5) !important;
+}
+input, select, textarea, .form-control {
+  background: #fbf5e6 !important; color: var(--ink) !important; border-color: #d8c9a6 !important;
+}
+.progress { background: #e2d4b3 !important; }
+.progress-bar { background: var(--bsx) !important; }
+hr { border-color: #e2d4b3 !important; }

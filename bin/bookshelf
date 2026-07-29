@@ -64,6 +64,7 @@ ${B}Library${R}
   ${C}seed${R}        Download a few free public-domain books to get started
   ${C}import${R} <path> Import an existing folder of books or Calibre library
   ${C}stats${R}       Show library stats and write data/stats.html
+  ${C}gallery${R}     Build the visual gallery data from your covers
   ${C}kindle${R}      Set up & test Send-to-Kindle email
   ${C}backup${R}      Make a timestamped backup now
   ${C}restore${R}     Restore the library from a backup
@@ -80,6 +81,8 @@ ${B}Add-ons (optional overlays)${R}
   ${C}offsite${R} <cmd>       Off-site cloud backups (setup|sync|pull|remotes)
   ${C}autoupdate on|off${R}   Auto-update to new versions (Watchtower)
   ${C}kosync up|down${R}      Self-hosted KOReader reading-progress sync
+  ${C}dashboard up|down${R}   Cinematic visual gallery of your library (port 8084)
+  ${C}theme${R} <name>|off    Restyle the real app (oled|midnight|sepia|contrast)
   ${C}service${R}             Install as a boot service (systemd; needs sudo)
 
 Run ${C}./setup.sh${R} first if you haven't set things up yet.
@@ -102,6 +105,7 @@ case "$cmd" in
   update)   exec "$ROOT/scripts/update.sh" "$@";;
   seed)     exec "$ROOT/scripts/seed-library.sh" "$@";;
   stats)    exec "$ROOT/scripts/stats.sh" "$@";;
+  gallery)  exec "$ROOT/scripts/gallery.sh" "$@";;
   import)   exec "$ROOT/scripts/import-calibre.sh" "$@";;
   kindle)   exec "$ROOT/scripts/kindle-setup.sh" "$@";;
   offsite)  exec "$ROOT/scripts/offsite.sh" "$@";;
@@ -162,6 +166,26 @@ case "$cmd" in
        down) "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.sync.yml stop kosync && "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.sync.yml rm -f kosync;;
        *) die "Usage: bookshelf kosync up|down";;
      esac;;
+  dashboard)
+     sub="${1:-up}"
+     case "$sub" in
+       up)   "$ROOT/scripts/gallery.sh" || true
+             "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.dashboard.yml up -d dashboard
+             say "${G}✓${R} Gallery running at ${C}http://localhost:${DASHBOARD_PORT:-8084}${R}";;
+       down) "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.dashboard.yml stop dashboard && "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.dashboard.yml rm -f dashboard;;
+       *) die "Usage: bookshelf dashboard up|down";;
+     esac;;
+  theme)
+     name="${1:-oled}"
+     if [ "$name" = "off" ]; then
+       "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.theme.yml down
+       "${COMPOSE[@]}" up -d
+       say "${G}✓${R} Theme removed; back to the default look."
+     else
+       [ -f "$ROOT/web/themes/${name}.css" ] || die "No theme '${name}'. Choose: oled | midnight | sepia | contrast."
+       THEME="$name" "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.theme.yml up -d
+       say "${G}✓${R} Applied the '${name}' theme. Open ${C}http://localhost:${PORT}${R} (hard-refresh)."
+     fi;;
   help|-h|--help) usage;;
   *) say "Unknown command: ${cmd}"; say ""; usage; exit 1;;
 esac
