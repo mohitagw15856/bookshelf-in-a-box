@@ -82,8 +82,11 @@ else
   VERDICT="${RED}● ${STATE}${R}"; PLAIN="$STATE"
 fi
 
+# version
+VERSION="unknown"; [ -f VERSION ] && VERSION="$(tr -d ' \n' < VERSION)"
+
 # --- print ---
-printf '\n  %s📚 bookshelf-in-a-box — status%s\n' "$B" "$R"
+printf '\n  %s📚 bookshelf-in-a-box — status%s   %sv%s%s\n' "$B" "$R" "$D" "$VERSION" "$R"
 printf '  %s────────────────────────────────────────%s\n' "$D" "$R"
 printf '  Server        %s\n' "$VERDICT"
 printf '  Web UI        %shttp://localhost:%s%s  (reachable: %s)\n' "$C" "$PORT" "$R" "$REACH"

@@ -1,0 +1,35 @@
+# bookshelf-in-a-box — automatic updates (optional)
+#
+# Runs Watchtower to auto-pull new Calibre-Web Automated images on a schedule
+# and recreate the container. It ONLY touches bookshelf's own container
+# (scoped by label), and your data is never affected.
+#
+# Turn it on:
+#   docker compose -f docker-compose.yml -f docker-compose.watchtower.yml up -d
+# or:
+#   ./bin/bookshelf autoupdate on
+#
+# ⚠️ Recommended: also enable nightly backups (./bin/bookshelf backups on) and
+# keep WATCHTOWER_SCHEDULE a little AFTER your BACKUP_CRON time, so there's
+# always a fresh backup to roll back to with ./bin/bookshelf restore.
+
+services:
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: bookshelf-watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TZ=${TZ:-Etc/UTC}
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_RESTARTING=true
+      # 6-field cron (with seconds). Default: 4 AM daily.
+      - WATCHTOWER_SCHEDULE=${WATCHTOWER_SCHEDULE:-0 0 4 * * *}
+      - WATCHTOWER_SCOPE=bookshelf
+    command: --scope bookshelf
+
+  calibre-web-automated:
+    # Let Watchtower manage only this container.
+    labels:
+      - "com.centurylinklabs.watchtower.scope=bookshelf"

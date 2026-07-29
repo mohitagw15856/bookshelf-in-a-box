@@ -1,0 +1,35 @@
+# bookshelf-in-a-box — scheduled off-site backups (optional)
+#
+# Continuously mirrors your ./backups folder to a cloud remote using rclone,
+# so your backups survive a dead disk. Configure the remote first:
+#   ./bin/bookshelf offsite setup        # one-time interactive config
+#   # then set OFFSITE_REMOTE in .env, e.g. OFFSITE_REMOTE=mycloud:bookshelf
+#
+# Turn the scheduler on:
+#   docker compose -f docker-compose.yml -f docker-compose.offsite.yml up -d offsite
+#
+# For encryption, point OFFSITE_REMOTE at an rclone "crypt" remote.
+
+services:
+  offsite:
+    image: rclone/rclone:latest
+    container_name: bookshelf-offsite
+    restart: unless-stopped
+    environment:
+      - OFFSITE_REMOTE=${OFFSITE_REMOTE:-}
+      - OFFSITE_INTERVAL=${OFFSITE_INTERVAL:-86400}
+    volumes:
+      - ./data/rclone:/config/rclone
+      - ./backups:/backups:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          if [ -z "$${OFFSITE_REMOTE}" ]; then
+            echo "[offsite] OFFSITE_REMOTE not set — run './bin/bookshelf offsite setup'. Retrying in 1h."
+            sleep 3600; continue
+          fi
+          echo "[offsite] $(date) copying /backups -> $${OFFSITE_REMOTE}"
+          rclone copy /backups "$${OFFSITE_REMOTE}" --config /config/rclone/rclone.conf || echo "[offsite] sync failed"
+          sleep "$${OFFSITE_INTERVAL}"
+        done

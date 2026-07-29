@@ -1,0 +1,39 @@
+name: Release
+
+# Tag a commit like `v0.3.0` and push the tag to cut a GitHub Release with
+# auto-generated notes:
+#   git tag v0.3.0 && git push origin v0.3.0
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Validate the Compose file before releasing
+        run: |
+          cp .env.example .env
+          docker compose config >/dev/null
+
+      - name: Create the GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: |
+            ## bookshelf-in-a-box ${{ github.ref_name }}
+
+            One-command, self-hosted ebook server. See the
+            [README](https://github.com/mohitagw15856/bookshelf-in-a-box#readme)
+            to get started, and `CHANGELOG.md` for details.
+
+            _Auto-generated notes below._

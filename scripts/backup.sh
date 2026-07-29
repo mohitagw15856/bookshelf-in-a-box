@@ -49,9 +49,12 @@ if tar -czf "$ARCHIVE" -C "$ROOT_DIR" \
       data/config data/library; then
   SIZE="$(du -h "$ARCHIVE" | cut -f1)"
   echo "✓ Backup complete (${SIZE})."
+  # Best-effort notification (silent if not configured).
+  "$SCRIPT_DIR/notify.sh" "Backup complete" "New backup ${SIZE}: $(basename "$ARCHIVE")" >/dev/null 2>&1 || true
 else
   # Don't leave a half-written archive behind.
   rm -f "$ARCHIVE"
+  "$SCRIPT_DIR/notify.sh" "⚠️ Backup FAILED" "Could not create $(basename "$ARCHIVE")" >/dev/null 2>&1 || true
   die "Backup failed while creating the archive."
 fi
 

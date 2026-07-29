@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Create .env from example
         run: cp .env.example .env
@@ -48,12 +48,21 @@ jobs:
       - name: Validate the Tailscale overlay
         run: TS_AUTHKEY=dummy docker compose -f docker-compose.yml -f docker-compose.tailscale.yml config
 
+      - name: Validate the off-site backup overlay
+        run: docker compose -f docker-compose.yml -f docker-compose.offsite.yml config
+
+      - name: Validate the KOReader sync overlay
+        run: docker compose -f docker-compose.yml -f docker-compose.sync.yml config
+
+      - name: Validate the auto-update (Watchtower) overlay
+        run: docker compose -f docker-compose.yml -f docker-compose.watchtower.yml config
+
   qr:
     name: Verify QR generator
     runs-on: ubuntu-latest
     steps:
       - name: Check out the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Sanity-check the QR encoder loads and produces a matrix
         run: |
@@ -71,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Create .env from example
         run: cp .env.example .env
