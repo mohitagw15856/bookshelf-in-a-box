@@ -89,6 +89,31 @@ a{color:var(--accent)}
 }
 .ribbon .cta:hover{opacity:.9}
 
+/* ---------- prominent gallery banner ---------- */
+.gallery-banner{
+  display:flex;align-items:center;gap:16px;text-decoration:none;color:#0a1024;
+  background:linear-gradient(120deg,#38bdf8,#818cf8 55%,#f0abfc);
+  background-size:200% 100%;animation:gbshift 8s ease infinite;
+  border-radius:var(--radius);padding:16px 20px;margin-bottom:18px;
+  box-shadow:0 16px 40px -18px rgba(129,140,248,.75);position:relative;overflow:hidden;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.gallery-banner:hover{transform:translateY(-2px);box-shadow:0 22px 52px -18px rgba(129,140,248,.9)}
+@keyframes gbshift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.gallery-banner .gb-emoji{font-size:26px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25))}
+.gallery-banner .gb-text{display:flex;flex-direction:column;flex:1;min-width:0}
+.gallery-banner .gb-text b{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.gallery-banner .gb-text small{font-size:12.5px;opacity:.82;font-weight:600}
+.gallery-banner .gb-go{
+  white-space:nowrap;font-weight:800;font-size:14px;background:rgba(10,16,36,.92);color:#fff;
+  padding:10px 16px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.2);
+}
+@media (max-width:560px){
+  .gallery-banner .gb-text small{display:none}
+  .gallery-banner{padding:14px 16px;gap:12px}
+}
+@media (prefers-reduced-motion:reduce){.gallery-banner{animation:none}}
+
 /* ---------- browser chrome ---------- */
 .window{
   border:1px solid var(--border);border-radius:18px;overflow:hidden;
@@ -282,9 +307,18 @@ a{color:var(--accent)}
     <span class="badge">Interactive demo</span>
     <p class="grow">This is a clickable preview of <b>bookshelf-in-a-box</b> — no server needed. The real thing runs on your own hardware in under 10 minutes.</p>
     <button class="iconbtn" id="themeBtn" title="Toggle light / dark" aria-label="Toggle light or dark theme">🌗</button>
-    <a class="cta" href="./gallery/" style="background:linear-gradient(135deg,#38bdf8,#818cf8);color:#08101f">✨ Visual gallery</a>
     <a class="cta" href="https://github.com/mohitagw15856/bookshelf-in-a-box" target="_blank" rel="noopener">★ Get it on GitHub</a>
   </div>
+
+  <!-- Prominent gallery banner -->
+  <a class="gallery-banner" href="./gallery/">
+    <span class="gb-emoji">✨</span>
+    <span class="gb-text">
+      <b>Explore the Visual Gallery</b>
+      <small>Cover wall · 3D shelf · “Wrapped” · insights · galaxy map · poster &amp; more</small>
+    </span>
+    <span class="gb-go">Open gallery →</span>
+  </a>
 
   <!-- Browser window -->
   <div class="window">
