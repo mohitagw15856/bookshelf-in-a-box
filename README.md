@@ -17,6 +17,7 @@
   <img alt="Self-hosted" src="https://img.shields.io/badge/self--hosted-%F0%9F%8F%A0-9cf">
   <img alt="Cost: £0 / $0" src="https://img.shields.io/badge/cost-%C2%A30%20%2F%20%240-brightgreen">
   <a href="https://github.com/mohitagw15856/bookshelf-in-a-box/actions"><img alt="CI status" src="https://github.com/mohitagw15856/bookshelf-in-a-box/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/mohitagw15856/bookshelf-in-a-box/releases"><img alt="Latest version" src="https://img.shields.io/github/v/tag/mohitagw15856/bookshelf-in-a-box?label=version&amp;color=8b5cf6"></a>
 </p>
 
 <p align="center">
@@ -224,8 +225,12 @@ make help                # the same, via make
 | Command | What it does |
 |---|---|
 | `./bin/bookshelf status` | Health, book count, disk space, last backup |
+| `./bin/bookshelf doctor` | Diagnose common problems and how to fix them |
 | `./bin/bookshelf seed` | Download free public-domain starter books |
+| `./bin/bookshelf import <path>` | Import a folder of books or an existing Calibre library |
+| `./bin/bookshelf stats` | Show library stats and write `data/stats.html` |
 | `./bin/bookshelf qr` | Show a QR code to add the library on your phone |
+| `./bin/bookshelf kindle` | Set up &amp; test Send-to-Kindle email |
 | `./bin/bookshelf open` / `wizard` | Open the library / the visual setup guide |
 | `./bin/bookshelf backup` / `restore` | Back up now / restore from a backup |
 | `./bin/bookshelf update` | Update to the latest version (data preserved) |
@@ -263,6 +268,64 @@ Tune `BACKUP_CRON` and `BACKUP_KEEP` in `.env`. Restore any snapshot interactive
 
 ### 🖼 Nicer covers &amp; metadata
 Set a free [Hardcover](https://hardcover.app/) API token as `HARDCOVER_TOKEN` in `.env` and the server will auto-fetch covers and metadata for imported books.
+
+### 🩺 `bookshelf doctor` — fix problems fast
+Stuck? Run `./bin/bookshelf doctor`. It checks Docker, ports, folder permissions, disk space, Windows/WSL path pitfalls, `.env` sanity, and container health — and prints the exact fix for anything it finds.
+
+### 📥 Import an existing collection
+Moving in from another setup? Bring your books along:
+
+```bash
+./bin/bookshelf import ~/Downloads/my-books          # copy a folder of ebooks in
+./bin/bookshelf import "~/Calibre Library" --adopt   # adopt an existing Calibre library wholesale
+```
+
+It only ever **copies** (never deletes the source), and skips anything it already imported.
+
+### 📊 Library stats
+`./bin/bookshelf stats` prints a summary — total books, formats, top authors, recent additions — and writes a shareable `data/stats.html` you can open in any browser.
+
+### ☁️ Off-site (cloud) backups
+Local backups protect against mistakes; off-site backups protect against a dead disk or a house fire. Uses [rclone](https://rclone.org/) (Google Drive, Backblaze B2, S3, Dropbox, …) in a container — nothing to install:
+
+```bash
+./bin/bookshelf offsite setup     # one-time: pick your cloud (use a "crypt" remote to encrypt)
+# set OFFSITE_REMOTE=... in .env, then:
+./bin/bookshelf offsite sync      # push ./backups to the cloud now
+```
+
+Automate it with the scheduler overlay: `docker compose -f docker-compose.yml -f docker-compose.offsite.yml up -d offsite`.
+
+### 🔔 Notifications
+Get pinged when a backup runs or fails. Set `NOTIFY_KIND` (`ntfy` / `discord` / `slack` / `telegram` / `webhook`) and `NOTIFY_URL` in `.env`, then test with `./bin/bookshelf notify test`. Backups send a note automatically once it's configured.
+
+### 📨 Send-to-Kindle, made foolproof
+`./bin/bookshelf kindle` collects your email (SMTP) details and **sends a real test email** so you know they work *before* you paste them into the library — then prints exactly where to put them.
+
+### 📖 Self-hosted KOReader sync &amp; Kobo sync
+Keep your reading position private by running the KOReader sync server on your own box:
+
+```bash
+./bin/bookshelf kosync up     # then point KOReader at https://<server-ip>:7200
+```
+
+**Kobo** readers can sync natively from Calibre-Web — enable it in **Admin → Feature Configuration → Kobo sync** and add your Kobo using the sync URL shown there (works great alongside the Caddy HTTPS add-on).
+
+### ♻️ Automatic updates
+Hands-off updates, scoped so they only touch bookshelf's container:
+
+```bash
+./bin/bookshelf autoupdate on     # Watchtower checks daily (WATCHTOWER_SCHEDULE in .env)
+```
+
+Best paired with nightly backups so you can always roll back with `restore`.
+
+### 🖥️ Run as a boot service (Linux)
+On a headless mini-PC or Raspberry Pi, start the library automatically on power-up:
+
+```bash
+sudo ./bin/bookshelf service      # installs a systemd unit (undo: sudo ./scripts/install-service.sh --uninstall)
+```
 
 ---
 

@@ -1,0 +1,28 @@
+# bookshelf-in-a-box — self-hosted KOReader sync server (optional)
+#
+# Runs the official KOReader sync server on your own hardware, so your
+# reading position syncs privately between your KOReader devices without
+# using the public server. (Bundles its own Redis — nothing else needed.)
+#
+# Turn it on:
+#   docker compose -f docker-compose.yml -f docker-compose.sync.yml up -d kosync
+# or:
+#   ./bin/bookshelf kosync up
+#
+# Then in KOReader on each device: Progress sync → Custom sync server →
+#   https://<SERVER-IP>:7200
+# (It uses a self-signed certificate; accept it the first time.)
+#
+# See also "Kobo sync" in the README — that's native to the library and
+# needs no extra container.
+
+services:
+  kosync:
+    image: koreader/kosync:latest
+    container_name: bookshelf-kosync
+    restart: unless-stopped
+    ports:
+      - "${KOSYNC_PORT:-7200}:7200"
+    volumes:
+      - ./data/kosync/redis:/var/lib/redis
+      - ./data/kosync/logs:/app/koreader-sync-server/logs

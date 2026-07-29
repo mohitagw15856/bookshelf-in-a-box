@@ -48,6 +48,15 @@ jobs:
       - name: Validate the Tailscale overlay
         run: TS_AUTHKEY=dummy docker compose -f docker-compose.yml -f docker-compose.tailscale.yml config
 
+      - name: Validate the off-site backup overlay
+        run: docker compose -f docker-compose.yml -f docker-compose.offsite.yml config
+
+      - name: Validate the KOReader sync overlay
+        run: docker compose -f docker-compose.yml -f docker-compose.sync.yml config
+
+      - name: Validate the auto-update (Watchtower) overlay
+        run: docker compose -f docker-compose.yml -f docker-compose.watchtower.yml config
+
   qr:
     name: Verify QR generator
     runs-on: ubuntu-latest

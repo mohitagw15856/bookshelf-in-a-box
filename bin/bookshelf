@@ -54,6 +54,7 @@ ${B}Everyday${R}
   ${C}down${R}        Stop it (your data is kept)
   ${C}restart${R}     Restart the container
   ${C}status${R}      Health, book count, disk, last backup
+  ${C}doctor${R}      Diagnose common problems and how to fix them
   ${C}logs${R}        Follow the container logs
   ${C}open${R}        Open the library in your browser
   ${C}wizard${R}      Open the first-run setup guide (change password, add a book)
@@ -61,16 +62,25 @@ ${B}Everyday${R}
 ${B}Library${R}
   ${C}qr${R}          Show a QR code to add the library on your phone (OPDS)
   ${C}seed${R}        Download a few free public-domain books to get started
+  ${C}import${R} <path> Import an existing folder of books or Calibre library
+  ${C}stats${R}       Show library stats and write data/stats.html
+  ${C}kindle${R}      Set up & test Send-to-Kindle email
   ${C}backup${R}      Make a timestamped backup now
   ${C}restore${R}     Restore the library from a backup
 
 ${B}Maintenance${R}
   ${C}update${R}      Pull the latest image and recreate (data preserved)
+  ${C}version${R}     Print the installed version
+  ${C}notify test${R} Send a test notification
 
 ${B}Add-ons (optional overlays)${R}
   ${C}tailscale up|down${R}   Read from anywhere, privately (needs TS_AUTHKEY in .env)
   ${C}caddy up|down${R}       Add HTTPS via a local Caddy reverse proxy
   ${C}backups on|off${R}      Run automatic nightly backups in the background
+  ${C}offsite${R} <cmd>       Off-site cloud backups (setup|sync|pull|remotes)
+  ${C}autoupdate on|off${R}   Auto-update to new versions (Watchtower)
+  ${C}kosync up|down${R}      Self-hosted KOReader reading-progress sync
+  ${C}service${R}             Install as a boot service (systemd; needs sudo)
 
 Run ${C}./setup.sh${R} first if you haven't set things up yet.
 EOF
@@ -86,10 +96,18 @@ case "$cmd" in
   logs)     need_setup; "${COMPOSE[@]}" logs -f;;
   ps)       need_setup; "${COMPOSE[@]}" ps;;
   status)   exec "$ROOT/scripts/status.sh" "$@";;
+  doctor)   exec "$ROOT/scripts/doctor.sh" "$@";;
   backup)   exec "$ROOT/scripts/backup.sh" "$@";;
   restore)  exec "$ROOT/scripts/restore.sh" "$@";;
   update)   exec "$ROOT/scripts/update.sh" "$@";;
   seed)     exec "$ROOT/scripts/seed-library.sh" "$@";;
+  stats)    exec "$ROOT/scripts/stats.sh" "$@";;
+  import)   exec "$ROOT/scripts/import-calibre.sh" "$@";;
+  kindle)   exec "$ROOT/scripts/kindle-setup.sh" "$@";;
+  offsite)  exec "$ROOT/scripts/offsite.sh" "$@";;
+  service)  exec "$ROOT/scripts/install-service.sh" "$@";;
+  notify)   exec "$ROOT/scripts/notify.sh" "${1:---test}";;
+  version)  if [ -f "$ROOT/VERSION" ]; then cat "$ROOT/VERSION"; else echo "unknown"; fi;;
   open)
      ip="$(local_ip)"; url="http://localhost:${PORT}"
      say "Opening ${C}${url}${R}"; open_url "$url" || say "Visit: $url"
@@ -129,6 +147,20 @@ case "$cmd" in
        on)  "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.backup.yml up -d backup; say "${G}✓${R} Nightly backups enabled.";;
        off) "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.backup.yml stop backup && "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.backup.yml rm -f backup; say "${G}✓${R} Automatic backups disabled.";;
        *) die "Usage: bookshelf backups on|off";;
+     esac;;
+  autoupdate)
+     sub="${1:-on}"
+     case "$sub" in
+       on)  "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.watchtower.yml up -d; say "${G}✓${R} Automatic updates enabled. Tip: also run '${C}./bin/bookshelf backups on${R}'.";;
+       off) "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.watchtower.yml stop watchtower && "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.watchtower.yml rm -f watchtower; say "${G}✓${R} Automatic updates disabled.";;
+       *) die "Usage: bookshelf autoupdate on|off";;
+     esac;;
+  kosync)
+     sub="${1:-up}"
+     case "$sub" in
+       up)   "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.sync.yml up -d kosync; say "${G}✓${R} KOReader sync server running. Point devices at ${C}https://<server-ip>:${KOSYNC_PORT:-7200}${R}";;
+       down) "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.sync.yml stop kosync && "${COMPOSE[@]}" -f docker-compose.yml -f docker-compose.sync.yml rm -f kosync;;
+       *) die "Usage: bookshelf kosync up|down";;
      esac;;
   help|-h|--help) usage;;
   *) say "Unknown command: ${cmd}"; say ""; usage; exit 1;;
