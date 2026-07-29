@@ -1,27 +1,52 @@
+<p align="center">
+  <img src="./.github/assets/banner.svg" alt="bookshelf-in-a-box — a free, open-source, one-command self-hosted ebook server you run on your own hardware and read on any device" width="100%">
+</p>
+
 <h1 align="center">📚 bookshelf-in-a-box</h1>
 
 <p align="center">
-  <strong>Your own ebook library. On your hardware. Readable on every device.</strong><br>
-  One command. No coding. Under 10 minutes.
+  <strong>The free, open-source, one-command self-hosted ebook server.</strong><br>
+  Host the books you own on your own hardware and read them on your phone, tablet, e-reader, and browser — anywhere.<br>
+  <em>No coding. No subscriptions. Set up in under 10 minutes.</em>
 </p>
 
 <p align="center">
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-green.svg">
-  <img alt="Platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows%20%7C%20Raspberry%20Pi-blue">
+  <img alt="Platform: macOS, Linux, Windows, Raspberry Pi" src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows%20%7C%20Raspberry%20Pi-blue">
   <img alt="Runs on Docker" src="https://img.shields.io/badge/runs%20on-Docker-2496ED?logo=docker&logoColor=white">
-  <img alt="Cost" src="https://img.shields.io/badge/cost-%C2%A30%20%2F%20%240-brightgreen">
-  <a href="https://github.com/mohitagw15856/bookshelf-in-a-box/actions"><img alt="CI" src="https://github.com/mohitagw15856/bookshelf-in-a-box/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="Self-hosted" src="https://img.shields.io/badge/self--hosted-%F0%9F%8F%A0-9cf">
+  <img alt="Cost: £0 / $0" src="https://img.shields.io/badge/cost-%C2%A30%20%2F%20%240-brightgreen">
+  <a href="https://github.com/mohitagw15856/bookshelf-in-a-box/actions"><img alt="CI status" src="https://github.com/mohitagw15856/bookshelf-in-a-box/actions/workflows/ci.yml/badge.svg"></a>
+</p>
+
+<p align="center">
+  <a href="#-quick-start-3-steps">🚀 Quick Start</a> &nbsp;·&nbsp;
+  <a href="#-read-on-your-devices">📱 Read anywhere</a> &nbsp;·&nbsp;
+  <a href="#-access-from-anywhere">🌍 Remote access</a> &nbsp;·&nbsp;
+  <a href="#-troubleshooting">🛠 Troubleshooting</a> &nbsp;·&nbsp;
+  <a href="#-faq">❓ FAQ</a>
 </p>
 
 ---
 
-## What is this?
+## What is bookshelf-in-a-box?
 
-**bookshelf-in-a-box** turns any spare computer — an old laptop, a Raspberry Pi, a mini PC — into your own personal ebook library, like a private Netflix for your books.
+**bookshelf-in-a-box is a free, open-source, self-hosted ebook server that you set up with a single command.** It turns any spare computer — an old laptop, a Raspberry Pi, or a mini PC — into your own personal ebook library, like a private Netflix for your books. You drop your ebooks into one folder and they instantly appear in a clean web library you can open from your **phone, tablet, e-reader, or any web browser** — at home, or from anywhere in the world with one extra free app.
 
-You drop your ebooks into one folder, and they instantly appear in a clean web library you can open from your **phone, tablet, e-reader, or any web browser** — at home or, with one extra free app, from anywhere in the world.
+It works by wrapping the proven, open-source [**Calibre-Web Automated**](https://github.com/crocodilestick/Calibre-Web-Automated) project in a Docker container. This repo's job is to make that **beginner-proof**: one script checks everything, sets it all up, and tells you exactly what to do next — no technical knowledge required.
 
-Under the hood it wraps the excellent, battle-tested [**Calibre-Web Automated**](https://github.com/crocodilestick/Calibre-Web-Automated) project in a Docker container. This repo's job is simply to make it **beginner-proof**: one script sets everything up and tells you exactly what to do next.
+### At a glance
+
+| | |
+|---|---|
+| 💻 **What it is** | A self-hosted ebook library server (Calibre-Web Automated, made easy) |
+| ⚡ **Setup** | One command — `./setup.sh` (macOS/Linux/Pi) or `./setup.ps1` (Windows) |
+| 📦 **Requirements** | Just [Docker](https://www.docker.com/products/docker-desktop/) — no Node, no Python |
+| 📱 **Read on** | iPhone, iPad, Android, Kindle, Kobo, KOReader, any web browser (via OPDS) |
+| 🌍 **Remote access** | Free & private with [Tailscale](https://tailscale.com/) — never port-forward |
+| 💸 **Cost** | £0 / $0 — no subscriptions, no accounts, no fees |
+| 🔒 **Privacy** | Your books, your hardware, nobody watching |
+| 📄 **License** | MIT (this wrapper) |
 
 ### Why you'll want it
 
@@ -318,4 +343,8 @@ If you find bookshelf-in-a-box useful, please go **star the upstream [Calibre-We
 
 Released under the [MIT License](LICENSE). Calibre-Web Automated, Calibre-Web, Calibre, and other referenced projects are the property of their respective authors and carry their own licenses.
 
+<p align="center">
+  <img src="./.github/assets/logo.svg" alt="bookshelf-in-a-box logo" width="72" height="72">
+</p>
 <p align="center"><sub>Made for people who just want to read their own books, everywhere. 📚</sub></p>
+<p align="center"><sub>self-hosted ebook server · Calibre-Web Automated setup · Docker ebook library · read ebooks on any device · OPDS server</sub></p>
