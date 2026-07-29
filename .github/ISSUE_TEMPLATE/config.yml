@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📖 Calibre-Web Automated (the underlying ebook server)
+    url: https://github.com/crocodilestick/Calibre-Web-Automated/issues
+    about: Bugs in the reader, converter, or web UI itself belong upstream here.
+  - name: 💬 Read the Troubleshooting & FAQ first
+    url: https://github.com/mohitagw15856/bookshelf-in-a-box#-troubleshooting
+    about: Most common problems (imports, ports, Kindle, network shares) are covered in the README.

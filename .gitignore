@@ -1,0 +1,17 @@
+# Your private configuration (contains your chosen port/timezone).
+.env
+
+# All of your actual data — books, config database, ingest staging.
+# Never commit your library.
+data/
+
+# Local backups.
+backups/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
