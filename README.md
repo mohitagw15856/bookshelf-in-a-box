@@ -20,12 +20,15 @@
 </p>
 
 <p align="center">
+  <a href="https://mohitagw15856.github.io/bookshelf-in-a-box/"><strong>🖥️ Try the live demo</strong></a> &nbsp;·&nbsp;
   <a href="#-quick-start-3-steps">🚀 Quick Start</a> &nbsp;·&nbsp;
   <a href="#-read-on-your-devices">📱 Read anywhere</a> &nbsp;·&nbsp;
   <a href="#-access-from-anywhere">🌍 Remote access</a> &nbsp;·&nbsp;
   <a href="#-troubleshooting">🛠 Troubleshooting</a> &nbsp;·&nbsp;
   <a href="#-faq">❓ FAQ</a>
 </p>
+
+<p align="center"><sub>👉 <a href="https://mohitagw15856.github.io/bookshelf-in-a-box/">See what your library will look like</a> — an interactive, click-through preview (no install needed).</sub></p>
 
 ---
 

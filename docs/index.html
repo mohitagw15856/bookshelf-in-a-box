@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bookshelf-in-a-box — live demo</title>
+<meta name="description" content="An interactive, click-through preview of bookshelf-in-a-box: the free, one-command self-hosted ebook server. See exactly what your personal library looks like before you install it.">
+<meta property="og:title" content="bookshelf-in-a-box — interactive demo">
+<meta property="og:description" content="Click through a live preview of your own self-hosted ebook library. Runs on your hardware in under 10 minutes.">
+<meta name="color-scheme" content="light dark">
+</head>
+<body>
+<!-- ==================================================================== -->
+<!--  bookshelf-in-a-box · interactive static demo                        -->
+<!--  100% self-contained. No backend, no external requests.              -->
+<!-- ==================================================================== -->
+<style>
+:root{
+  --paper:#f5f2ea; --surface:#ffffff; --surface-2:#efeadd; --elev:#ffffff;
+  --border:#e2dccb; --ink:#20232e; --ink-2:#3c4051; --muted:#6f7488;
+  --accent:#4f6ef2; --accent-2:#8b5cf6; --accent-ink:#ffffff;
+  --grad:linear-gradient(135deg,#38bdf8,#818cf8);
+  --good:#0f9d6a; --warn:#c2790a;
+  --shadow:0 10px 30px -12px rgba(30,27,75,.28);
+  --shadow-lg:0 24px 60px -20px rgba(30,27,75,.45);
+  --radius:14px;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0c1020; --surface:#141a2e; --surface-2:#1b2237; --elev:#1c2440;
+    --border:#28304d; --ink:#e9edfb; --ink-2:#c2c9e4; --muted:#8b93b4;
+    --accent:#7aa2ff; --accent-2:#a78bfa; --accent-ink:#0c1020;
+    --good:#34d399; --warn:#fbbf24;
+    --shadow:0 12px 34px -14px rgba(0,0,0,.6);
+    --shadow-lg:0 28px 70px -22px rgba(0,0,0,.72);
+  }
+}
+:root[data-theme="light"]{
+  --paper:#f5f2ea; --surface:#ffffff; --surface-2:#efeadd; --elev:#ffffff;
+  --border:#e2dccb; --ink:#20232e; --ink-2:#3c4051; --muted:#6f7488;
+  --accent:#4f6ef2; --accent-2:#8b5cf6; --accent-ink:#ffffff;
+  --good:#0f9d6a; --warn:#c2790a;
+  --shadow:0 10px 30px -12px rgba(30,27,75,.28);
+  --shadow-lg:0 24px 60px -20px rgba(30,27,75,.45);
+}
+:root[data-theme="dark"]{
+  --paper:#0c1020; --surface:#141a2e; --surface-2:#1b2237; --elev:#1c2440;
+  --border:#28304d; --ink:#e9edfb; --ink-2:#c2c9e4; --muted:#8b93b4;
+  --accent:#7aa2ff; --accent-2:#a78bfa; --accent-ink:#0c1020;
+  --good:#34d399; --warn:#fbbf24;
+  --shadow:0 12px 34px -14px rgba(0,0,0,.6);
+  --shadow-lg:0 28px 70px -22px rgba(0,0,0,.72);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:var(--sans); color:var(--ink);
+  background:
+    radial-gradient(1200px 600px at 12% -10%, rgba(129,140,248,.18), transparent 60%),
+    radial-gradient(1000px 500px at 110% 0%, rgba(56,189,248,.14), transparent 55%),
+    var(--paper);
+  min-height:100vh; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit}
+a{color:var(--accent)}
+
+/* ---------- page shell ---------- */
+.page{max-width:1180px;margin:0 auto;padding:22px 18px 60px}
+
+/* ---------- demo ribbon ---------- */
+.ribbon{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 16px;box-shadow:var(--shadow);margin-bottom:18px;
+}
+.ribbon .badge{
+  font:700 11px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--accent-ink);background:var(--grad);padding:6px 10px;border-radius:999px;white-space:nowrap;
+}
+.ribbon p{margin:0;color:var(--ink-2);font-size:14px}
+.ribbon .grow{flex:1 1 260px;min-width:220px}
+.ribbon .cta{
+  display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+  background:var(--ink);color:var(--paper);font-weight:600;font-size:13px;
+  padding:9px 14px;border-radius:10px;white-space:nowrap;
+}
+:root[data-theme="dark"] .ribbon .cta,
+@media (prefers-color-scheme:dark){}
+.ribbon .cta:hover{opacity:.9}
+
+/* ---------- browser chrome ---------- */
+.window{
+  border:1px solid var(--border);border-radius:18px;overflow:hidden;
+  box-shadow:var(--shadow-lg);background:var(--surface);
+}
+.chrome{
+  display:flex;align-items:center;gap:12px;padding:10px 14px;
+  background:var(--surface-2);border-bottom:1px solid var(--border);
+}
+.dots{display:flex;gap:7px}
+.dots i{width:12px;height:12px;border-radius:50%;display:block}
+.dots i:nth-child(1){background:#ff5f57}.dots i:nth-child(2){background:#febc2e}.dots i:nth-child(3){background:#28c840}
+.omnibox{
+  flex:1;display:flex;align-items:center;gap:8px;background:var(--surface);
+  border:1px solid var(--border);border-radius:9px;padding:6px 12px;
+  color:var(--muted);font:500 13px/1 var(--mono);min-width:0;
+}
+.omnibox svg{flex:none}
+.omnibox span{color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chrome .win-actions{display:flex;gap:6px}
+
+/* ---------- app frame ---------- */
+.app{position:relative;min-height:620px;background:var(--paper)}
+
+/* topbar */
+.topbar{
+  display:flex;align-items:center;gap:14px;padding:12px 18px;
+  border-bottom:1px solid var(--border);background:var(--surface);
+  position:sticky;top:0;z-index:5;
+}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em}
+.brand .mark{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;color:#0c1020;font-size:16px}
+.brand b{font-size:15px}
+.search{
+  flex:1;max-width:420px;display:flex;align-items:center;gap:9px;
+  background:var(--paper);border:1px solid var(--border);border-radius:10px;padding:8px 12px;color:var(--muted);
+}
+.search input{border:0;background:transparent;outline:none;color:var(--ink);font:inherit;width:100%}
+.topbar .spacer{flex:1}
+.iconbtn{
+  display:inline-grid;place-items:center;width:38px;height:38px;border-radius:10px;
+  background:var(--paper);border:1px solid var(--border);color:var(--ink-2);cursor:pointer;
+}
+.iconbtn:hover{border-color:var(--accent);color:var(--accent)}
+.userchip{display:flex;align-items:center;gap:9px;padding:5px 10px 5px 5px;border:1px solid var(--border);border-radius:999px;background:var(--paper)}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--grad);display:grid;place-items:center;color:#0c1020;font-weight:800;font-size:13px}
+.userchip small{color:var(--muted)}
+
+/* body split */
+.split{display:grid;grid-template-columns:212px 1fr}
+.side{border-right:1px solid var(--border);background:var(--surface);padding:16px 12px;min-height:560px}
+.side h4{margin:14px 8px 6px;font:700 11px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{
+  display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:pointer;
+  background:transparent;border:0;color:var(--ink-2);font:600 14px/1 var(--sans);
+  padding:9px 11px;border-radius:9px;
+}
+.nav button .ic{width:18px;text-align:center;opacity:.85}
+.nav button:hover{background:var(--paper)}
+.nav button.active{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
+.nav button .count{margin-left:auto;font-size:12px;color:var(--muted);font-weight:600}
+.side .health{margin:16px 8px 0;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--paper)}
+.side .health .row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin:4px 0}
+.side .health .row b{color:var(--ink)}
+.pill-ok{display:inline-flex;align-items:center;gap:6px;color:var(--good);font-weight:700;font-size:12px}
+.pill-ok::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 25%,transparent)}
+
+/* main */
+.main{padding:20px 22px}
+.main-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.main-head h1{margin:0;font:700 24px/1.1 var(--serif);letter-spacing:.01em}
+.main-head p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+.seg{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px}
+.seg button{border:0;background:transparent;cursor:pointer;color:var(--muted);font:600 13px/1 var(--sans);padding:7px 12px;border-radius:7px}
+.seg button.active{background:var(--paper);color:var(--ink);box-shadow:var(--shadow)}
+
+/* book grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:20px}
+.card{cursor:pointer;border:0;background:transparent;padding:0;text-align:left;color:inherit;font:inherit}
+.cover{
+  position:relative;aspect-ratio:2/3;border-radius:10px;overflow:hidden;
+  box-shadow:var(--shadow);transition:transform .18s ease, box-shadow .18s ease;
+  display:flex;flex-direction:column;justify-content:space-between;padding:14px 13px;color:#fff;
+}
+.card:hover .cover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.cover::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.14),transparent 40%,rgba(0,0,0,.28));pointer-events:none}
+.cover .spine{position:absolute;left:0;top:0;bottom:0;width:8px;background:rgba(0,0,0,.22)}
+.cover .ttl{font:700 16.5px/1.18 var(--serif);text-shadow:0 1px 2px rgba(0,0,0,.35);position:relative;z-index:1;text-wrap:balance}
+.cover .ath{font-size:11.5px;opacity:.92;letter-spacing:.02em;position:relative;z-index:1}
+.cover .fmt{position:absolute;top:10px;right:10px;font:700 9px/1 var(--sans);letter-spacing:.08em;background:rgba(0,0,0,.32);padding:4px 6px;border-radius:5px;z-index:1}
+.meta{padding:9px 2px 0}
+.meta .m-t{font-weight:700;font-size:13.5px;line-height:1.25;color:var(--ink)}
+.meta .m-a{font-size:12px;color:var(--muted);margin-top:1px}
+.stars{color:#f6b73c;font-size:12px;letter-spacing:1px;margin-top:3px}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:50px 0}
+
+/* ---------- overlays ---------- */
+.overlay{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:22px;
+  background:color-mix(in srgb,var(--ink) 42%,transparent);backdrop-filter:blur(3px)}
+.overlay.show{display:flex}
+.sheet{background:var(--elev);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-lg);width:min(680px,100%);max-height:100%;overflow:auto}
+
+/* login */
+#login{background:
+  radial-gradient(900px 500px at 20% -10%, rgba(129,140,248,.35), transparent 60%),
+  radial-gradient(700px 460px at 120% 10%, rgba(56,189,248,.28), transparent 55%),
+  color-mix(in srgb,var(--ink) 70%,#000);}
+.login-card{width:min(380px,100%);background:var(--elev);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-lg);padding:26px 24px;text-align:center}
+.login-card .mark{width:52px;height:52px;border-radius:14px;background:var(--grad);display:grid;place-items:center;font-size:26px;margin:0 auto 12px}
+.login-card h2{margin:0 0 2px;font:700 20px/1.2 var(--serif)}
+.login-card p{margin:0 0 18px;color:var(--muted);font-size:13px}
+.field{text-align:left;margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:5px}
+.field input{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:var(--paper);color:var(--ink);font:inherit;outline:none}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;cursor:pointer;
+  border:0;border-radius:11px;padding:12px 16px;font:700 14px/1 var(--sans);color:var(--accent-ink);background:var(--grad)}
+.btn:hover{filter:brightness(1.05)}
+.btn.ghost{background:var(--paper);color:var(--ink);border:1px solid var(--border)}
+.login-note{margin-top:14px;font-size:11.5px;color:var(--muted)}
+.warn-chip{margin-top:12px;display:flex;gap:8px;align-items:flex-start;text-align:left;background:color-mix(in srgb,var(--warn) 14%,transparent);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);color:var(--ink-2);padding:9px 11px;border-radius:10px;font-size:12px}
+
+/* detail sheet */
+.detail{display:grid;grid-template-columns:200px 1fr;gap:22px;padding:24px}
+.detail .big-cover{aspect-ratio:2/3;border-radius:12px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;justify-content:space-between;padding:16px;color:#fff;position:relative;overflow:hidden}
+.detail .big-cover .ttl{font:700 20px/1.15 var(--serif);position:relative;z-index:1;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.detail .big-cover .ath{font-size:12px;opacity:.92;position:relative;z-index:1}
+.detail .big-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.16),transparent 42%,rgba(0,0,0,.3))}
+.detail h2{margin:0;font:700 24px/1.15 var(--serif);text-wrap:balance}
+.detail .by{color:var(--muted);margin:4px 0 10px;font-size:14px}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 14px}
+.tag{font:600 11px/1 var(--sans);letter-spacing:.04em;color:var(--ink-2);background:var(--paper);border:1px solid var(--border);padding:6px 9px;border-radius:7px}
+.tag.fmt{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.detail .desc{color:var(--ink-2);font-size:14px;margin:6px 0 16px}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.actions .btn{width:auto;padding:11px 16px}
+.detail .close,.reader .close,.sheet .close{position:absolute;top:14px;right:14px}
+.sheet{position:relative}
+
+/* reader */
+#reader .sheet{width:min(720px,100%);height:min(88%,760px);display:flex;flex-direction:column}
+.reader-bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface)}
+.reader-bar b{font:700 15px/1.2 var(--serif)}
+.reader-bar .spacer{flex:1}
+.reader-body{flex:1;overflow:auto;padding:34px clamp(20px,7%,64px);background:var(--paper)}
+.reader-body .chap{max-width:60ch;margin:0 auto;font-family:var(--serif);font-size:var(--reader-fs,18px);line-height:1.75;color:var(--ink)}
+.reader-body .chap h3{font-size:1.15em;margin:0 0 1em;text-align:center;letter-spacing:.02em}
+.reader-body .chap p{margin:0 0 1.1em;text-indent:1.4em}
+.reader-body .chap p:first-of-type{text-indent:0}
+.reader-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px}
+
+/* opds */
+.opds{padding:24px}
+.opds h2{margin:0 0 4px;font:700 20px/1.2 var(--serif)}
+.opds p{color:var(--ink-2);font-size:13.5px;margin:0 0 14px}
+.opds-url{display:flex;gap:8px;align-items:center;background:var(--paper);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font:600 13px/1 var(--mono);color:var(--ink);overflow:auto}
+.opds-url .copy{margin-left:auto;flex:none}
+.opds-grid{display:grid;grid-template-columns:150px 1fr;gap:20px;margin-top:16px;align-items:start}
+.qr{width:150px;height:150px;border-radius:12px;border:1px solid var(--border);background:#fff;padding:10px}
+.applist{display:flex;flex-direction:column;gap:8px}
+.applist .app{display:flex;gap:11px;align-items:center;background:var(--paper);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.applist .app .ico{width:34px;height:34px;border-radius:9px;background:var(--grad);display:grid;place-items:center;font-size:17px}
+.applist .app b{font-size:13.5px}.applist .app small{color:var(--muted);font-size:12px}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:var(--paper);padding:12px 18px;border-radius:12px;box-shadow:var(--shadow-lg);
+  font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:60;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* footer under window */
+.footnote{text-align:center;color:var(--muted);font-size:12.5px;margin-top:18px}
+.footnote a{font-weight:600}
+
+@media (max-width:780px){
+  .split{grid-template-columns:1fr}
+  .side{display:none}
+  .detail{grid-template-columns:1fr}
+  .detail .big-cover{max-width:180px}
+  .opds-grid{grid-template-columns:1fr}
+  .qr{margin:0 auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="page">
+
+  <!-- Demo ribbon -->
+  <div class="ribbon">
+    <span class="badge">Interactive demo</span>
+    <p class="grow">This is a clickable preview of <b>bookshelf-in-a-box</b> — no server needed. The real thing runs on your own hardware in under 10 minutes.</p>
+    <button class="iconbtn" id="themeBtn" title="Toggle light / dark" aria-label="Toggle light or dark theme">🌗</button>
+    <a class="cta" href="https://github.com/mohitagw15856/bookshelf-in-a-box" target="_blank" rel="noopener">★ Get it on GitHub</a>
+  </div>
+
+  <!-- Browser window -->
+  <div class="window">
+    <div class="chrome">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div class="omnibox">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        <span>localhost:8083</span>
+      </div>
+    </div>
+
+    <div class="app" id="app">
+
+      <!-- ===== Login overlay ===== -->
+      <div class="overlay show" id="login">
+        <div class="login-card">
+          <div class="mark">📚</div>
+          <h2>bookshelf-in-a-box</h2>
+          <p>Sign in to your library</p>
+          <div class="field"><label>Username</label><input id="u" value="admin" autocomplete="off"></div>
+          <div class="field"><label>Password</label><input id="p" type="password" value="admin123"></div>
+          <button class="btn" id="signin">Sign in →</button>
+          <div class="warn-chip">⚠️ <span>First thing in the real app: change the default <b>admin / admin123</b> password before anyone else can reach your server.</span></div>
+          <div class="login-note">Demo mode — just press <b>Sign in</b> to explore.</div>
+        </div>
+      </div>
+
+      <!-- ===== Topbar ===== -->
+      <div class="topbar">
+        <div class="brand"><span class="mark">📚</span><b>bookshelf</b></div>
+        <div class="search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="q" placeholder="Search title or author…">
+        </div>
+        <div class="spacer"></div>
+        <button class="iconbtn" id="opdsBtn" title="OPDS / read on your devices">📡</button>
+        <div class="userchip"><span class="avatar">A</span><div><div style="font-size:13px;font-weight:700">admin</div><small>Administrator</small></div></div>
+      </div>
+
+      <!-- ===== Split ===== -->
+      <div class="split">
+        <aside class="side">
+          <h4>Library</h4>
+          <div class="nav" id="nav">
+            <button data-view="all" class="active"><span class="ic">📚</span> All books <span class="count" id="c-all"></span></button>
+            <button data-view="recent"><span class="ic">✨</span> Recently added <span class="count" id="c-recent"></span></button>
+            <button data-view="unread"><span class="ic">📖</span> Unread <span class="count" id="c-unread"></span></button>
+            <button data-view="read"><span class="ic">✅</span> Finished <span class="count" id="c-read"></span></button>
+          </div>
+          <h4>Browse</h4>
+          <div class="nav">
+            <button data-view="authors"><span class="ic">✍️</span> Authors</button>
+            <button data-view="series"><span class="ic">🔗</span> Series</button>
+            <button data-view="opds"><span class="ic">📡</span> OPDS feed</button>
+          </div>
+          <div class="health">
+            <div class="row"><span>Server</span><span class="pill-ok">healthy</span></div>
+            <div class="row"><span>Books</span><b id="h-books">12</b></div>
+            <div class="row"><span>Library size</span><b>0.4 GB</b></div>
+            <div class="row"><span>Auto-convert</span><b style="color:var(--good)">on</b></div>
+            <div class="row"><span>Last backup</span><b>2h ago</b></div>
+          </div>
+        </aside>
+
+        <main class="main">
+          <div class="main-head">
+            <div>
+              <h1 id="viewTitle">Your library</h1>
+              <p id="viewSub">Everything you own, ready on every device.</p>
+            </div>
+            <div class="seg" id="seg">
+              <button data-sort="title" class="active">A–Z</button>
+              <button data-sort="year">Year</button>
+              <button data-sort="rating">Top rated</button>
+            </div>
+          </div>
+          <div class="grid" id="grid"></div>
+        </main>
+      </div>
+
+      <!-- ===== Detail overlay ===== -->
+      <div class="overlay" id="detail"><div class="sheet"><button class="iconbtn close" id="detailClose">✕</button><div class="detail" id="detailBody"></div></div></div>
+
+      <!-- ===== Reader overlay ===== -->
+      <div class="overlay" id="reader"><div class="sheet">
+        <div class="reader-bar">
+          <b id="readerTitle">—</b><div class="spacer"></div>
+          <button class="iconbtn" id="fsDown" title="Smaller text">A−</button>
+          <button class="iconbtn" id="fsUp" title="Larger text">A＋</button>
+          <button class="iconbtn close" id="readerClose">✕</button>
+        </div>
+        <div class="reader-body"><div class="chap" id="readerChap"></div></div>
+        <div class="reader-foot"><span id="readerFoot">Chapter 1</span><span>Reading position syncs across your KOReader devices</span></div>
+      </div></div>
+
+      <!-- ===== OPDS overlay ===== -->
+      <div class="overlay" id="opds"><div class="sheet"><button class="iconbtn close" id="opdsClose">✕</button>
+        <div class="opds">
+          <h2>📡 Read on your phone, tablet & e-reader</h2>
+          <p>Point any OPDS-capable reading app at this address (devices on the same WiFi). It’s the universal standard every good ebook app speaks.</p>
+          <div class="opds-url"><span id="opdsUrl">http://192.168.1.50:8083/opds</span><button class="iconbtn copy" id="opdsCopy" title="Copy">⧉</button></div>
+          <div class="opds-grid">
+            <canvas class="qr" id="qr" width="130" height="130" aria-label="Example OPDS QR code"></canvas>
+            <div class="applist">
+              <div class="app"><span class="ico">📖</span><div><b>KOReader</b><br><small>Add an OPDS catalog → paste the URL. Kobo, Kindle (jailbroken), Android, iOS.</small></div></div>
+              <div class="app"><span class="ico">🌙</span><div><b>Moon+ Reader</b><br><small>Android · Net Library → Calibre/OPDS → paste the URL.</small></div></div>
+              <div class="app"><span class="ico">🍎</span><div><b>Yomu / Panels</b><br><small>iPhone & iPad · Add OPDS catalog → paste the URL.</small></div></div>
+              <div class="app"><span class="ico">📨</span><div><b>Send to Kindle</b><br><small>Email any book straight to your Kindle from the book page.</small></div></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+
+    </div><!-- /app -->
+  </div><!-- /window -->
+
+  <p class="footnote">A static preview · your real library lives on your hardware, private and ad-free · <a href="https://github.com/mohitagw15856/bookshelf-in-a-box" target="_blank" rel="noopener">github.com/mohitagw15856/bookshelf-in-a-box</a></p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  // ---- deterministic book data (public-domain classics) ----
+  var BOOKS = [
+    {t:"Pride and Prejudice",a:"Jane Austen",y:1813,c:["#e26aa5","#b5478a"],r:5,read:true,recent:false,
+     s:"Sisters, suitors and sharp wit in Regency England — the sparring of Elizabeth Bennet and Mr Darcy.",
+     x:["It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.",
+        "However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered the rightful property of some one or other of their daughters."]},
+    {t:"Frankenstein",a:"Mary Shelley",y:1818,c:["#3fae8f","#1f7d68"],r:5,read:false,recent:true,
+     s:"A scientist creates life — and must answer for it. The original tale of ambition and its shadow.",
+     x:["You will rejoice to hear that no disaster has accompanied the commencement of an enterprise which you have regarded with such evil forebodings.",
+        "I arrived here yesterday, and my first task is to assure my dear sister of my welfare and increasing confidence in the success of my undertaking."]},
+    {t:"Moby-Dick",a:"Herman Melville",y:1851,c:["#3d7fd6","#255fa8"],r:4,read:false,recent:false,
+     s:"One man’s obsession with a white whale — a vast, roving voyage across ocean and mind.",
+     x:["Call me Ishmael. Some years ago—never mind how long precisely—having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world.",
+        "It is a way I have of driving off the spleen, and regulating the circulation."]},
+    {t:"Dracula",a:"Bram Stoker",y:1897,c:["#8a5cf0","#6a3fd0"],r:4,read:false,recent:true,
+     s:"A count, a coffin and a crossing to England — the letters and diaries that built the vampire myth.",
+     x:["3 May. Bistritz.—Left Munich at 8:35 P. M., on 1st May, arriving at Vienna early next morning; should have arrived at 6:46, but train was an hour late.",
+        "Buda-Pesth seems a wonderful place, from the glimpse which I got of it from the train."]},
+    {t:"Alice’s Adventures in Wonderland",a:"Lewis Carroll",y:1865,c:["#f0a13c","#cf7f1c"],r:5,read:true,recent:false,
+     s:"Down the rabbit hole into a logic all its own — tea parties, playing cards and impossible sizes.",
+     x:["Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do.",
+        "So she was considering, in her own mind, whether the pleasure of making a daisy-chain would be worth the trouble of getting up and picking the daisies, when suddenly a White Rabbit with pink eyes ran close by her."]},
+    {t:"The Adventures of Sherlock Holmes",a:"Arthur Conan Doyle",y:1892,c:["#d1663f","#ad4a29"],r:5,read:false,recent:false,
+     s:"Twelve cases, one incomparable detective. Deduction, disguise and the fog of Baker Street.",
+     x:["To Sherlock Holmes she is always the woman. I have seldom heard him mention her under any other name.",
+        "In his eyes she eclipses and predominates the whole of her sex."]},
+    {t:"A Tale of Two Cities",a:"Charles Dickens",y:1859,c:["#5b6ee0","#3b4cc0"],r:4,read:false,recent:false,
+     s:"London and Paris on the edge of revolution — sacrifice, resurrection and a famous opening line.",
+     x:["It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness.",
+        "It was the epoch of belief, it was the epoch of incredulity, it was the season of Light, it was the season of Darkness."]},
+    {t:"The Picture of Dorian Gray",a:"Oscar Wilde",y:1890,c:["#2fb3a3","#1c8a7d"],r:4,read:false,recent:true,
+     s:"A portrait ages while its subject does not — beauty, vanity and moral rot, wickedly told.",
+     x:["The studio was filled with the rich odour of roses, and when the light summer wind stirred amidst the trees of the garden, there came through the open door the heavy scent of the lilac.",
+        "From the corner of the divan of Persian saddle-bags on which he was lying, Lord Henry Wotton could just catch the gleam of the honey-sweet blossoms of a laburnum."]},
+    {t:"Meditations",a:"Marcus Aurelius",y:180,c:["#7a8493","#59626f"],r:5,read:true,recent:false,
+     s:"The private notebook of a Roman emperor — Stoic reflections on duty, mortality and calm.",
+     x:["From my grandfather Verus I learned good morals and the government of my temper.",
+        "From the reputation and remembrance of my father, modesty and a manly character."]},
+    {t:"The Time Machine",a:"H. G. Wells",y:1895,c:["#4aa6c9","#2d81a3"],r:4,read:false,recent:true,
+     s:"A traveller pushes a lever and the years blur past — the birth of the time-travel novel.",
+     x:["The Time Traveller (for so it will be convenient to speak of him) was expounding a recondite matter to us.",
+        "His pale grey eyes shone and twinkled, and his usually pale face was flushed and animated."]},
+    {t:"Jane Eyre",a:"Charlotte Brontë",y:1847,c:["#b0567e","#8c3a60"],r:5,read:false,recent:false,
+     s:"An orphan’s fierce independence, a secret in the attic, and a love tested by both.",
+     x:["There was no possibility of taking a walk that day. We had been wandering, indeed, in the leafless shrubbery an hour in the morning.",
+        "But since dinner the cold winter wind had brought with it clouds so sombre, and a rain so penetrating, that further outdoor exercise was now out of the question."]},
+    {t:"The Wonderful Wizard of Oz",a:"L. Frank Baum",y:1900,c:["#3fae5a","#268a3f"],r:4,read:false,recent:false,
+     s:"A cyclone, a yellow road and four unlikely friends seeking what they already carry.",
+     x:["Dorothy lived in the midst of the great Kansas prairies, with Uncle Henry, who was a farmer, and Aunt Em, who was the farmer’s wife.",
+        "Their house was small, for the lumber to build it had to be carried by wagon many miles."]}
+  ];
+
+  var $=function(s){return document.querySelector(s)};
+  var state={view:"all",sort:"title",q:""};
+
+  function stars(n){return "★★★★★".slice(0,n)+"☆☆☆☆☆".slice(0,5-n)}
+  function fmtOf(b){return b.y<1850?"EPUB":(b.r>=5?"EPUB":"EPUB")}
+
+  function filtered(){
+    var list=BOOKS.slice();
+    if(state.view==="recent")list=list.filter(function(b){return b.recent});
+    else if(state.view==="unread")list=list.filter(function(b){return !b.read});
+    else if(state.view==="read")list=list.filter(function(b){return b.read});
+    if(state.q){var q=state.q.toLowerCase();list=list.filter(function(b){return (b.t+" "+b.a).toLowerCase().indexOf(q)>-1})}
+    if(state.sort==="title")list.sort(function(a,b){return a.t.localeCompare(b.t)});
+    else if(state.sort==="year")list.sort(function(a,b){return a.y-b.y});
+    else list.sort(function(a,b){return b.r-a.r});
+    return list;
+  }
+
+  function coverStyle(b){return "background:linear-gradient(155deg,"+b.c[0]+","+b.c[1]+")"}
+
+  function render(){
+    var g=$("#grid"),list=filtered();
+    g.innerHTML="";
+    if(!list.length){g.innerHTML='<div class="empty">No books match “'+state.q+'”.</div>';return}
+    list.forEach(function(b){
+      var card=document.createElement("button");
+      card.className="card";
+      card.innerHTML=
+        '<div class="cover" style="'+coverStyle(b)+'"><span class="spine"></span>'+
+          '<span class="fmt">EPUB</span>'+
+          '<div><div class="ttl">'+b.t+'</div></div>'+
+          '<div class="ath">'+b.a+'</div>'+
+        '</div>'+
+        '<div class="meta"><div class="m-t">'+b.t+'</div><div class="m-a">'+b.a+'</div>'+
+        '<div class="stars">'+stars(b.r)+'</div></div>';
+      card.addEventListener("click",function(){openDetail(b)});
+      g.appendChild(card);
+    });
+  }
+
+  var TITLES={all:["Your library","Everything you own, ready on every device."],
+    recent:["Recently added","Freshly imported from your ingest folder."],
+    unread:["Unread","Waiting for you."],
+    read:["Finished","Books you’ve completed."],
+    authors:["Authors","Browse by who wrote them."],
+    series:["Series","Books grouped into their series."]};
+
+  function setView(v){
+    if(v==="opds"){openOverlay("opds");return}
+    state.view=v;
+    document.querySelectorAll("#nav button, .side .nav button").forEach(function(x){x.classList.toggle("active",x.dataset.view===v)});
+    var meta=TITLES[v]||TITLES.all;
+    $("#viewTitle").textContent=meta[0];$("#viewSub").textContent=meta[1];
+    render();
+  }
+
+  function openOverlay(id){$("#"+id).classList.add("show")}
+  function closeOverlay(id){$("#"+id).classList.remove("show")}
+
+  function openDetail(b){
+    $("#detailBody").innerHTML=
+      '<div class="big-cover" style="'+coverStyle(b)+'"><div class="ttl">'+b.t+'</div><div class="ath">'+b.a+'</div></div>'+
+      '<div>'+
+        '<h2>'+b.t+'</h2><div class="by">by '+b.a+' · '+b.y+'</div>'+
+        '<div class="stars" style="font-size:15px">'+stars(b.r)+'</div>'+
+        '<div class="tags"><span class="tag fmt">EPUB</span><span class="tag fmt">MOBI</span><span class="tag fmt">PDF</span><span class="tag">'+(b.read?"Finished":"Unread")+'</span><span class="tag">Public domain</span></div>'+
+        '<div class="desc">'+b.s+'</div>'+
+        '<div class="actions">'+
+          '<button class="btn" data-act="read">📖 Read in browser</button>'+
+          '<button class="btn ghost" data-act="dl">⬇ Download EPUB</button>'+
+          '<button class="btn ghost" data-act="kindle">📨 Send to Kindle</button>'+
+        '</div>'+
+      '</div>';
+    $("#detailBody").querySelector('[data-act="read"]').addEventListener("click",function(){closeOverlay("detail");openReader(b)});
+    $("#detailBody").querySelector('[data-act="dl"]').addEventListener("click",function(){toast("Demo: in the real app this downloads “"+b.t+"” as EPUB.")});
+    $("#detailBody").querySelector('[data-act="kindle"]').addEventListener("click",function(){toast("Demo: this emails “"+b.t+"” straight to your Kindle.")});
+    openOverlay("detail");
+  }
+
+  var readerFS=18;
+  function openReader(b){
+    $("#readerTitle").textContent=b.t;
+    $("#readerFoot").textContent=b.a+" · Chapter 1";
+    var html='<h3>'+b.t+'</h3>';
+    b.x.forEach(function(p){html+='<p>'+p+'</p>'});
+    html+='<p style="text-align:center;text-indent:0;color:var(--muted);font-family:var(--sans);font-size:.8em;margin-top:2.4em">— demo excerpt · the full public-domain text is included in the real library —</p>';
+    $("#readerChap").innerHTML=html;
+    $("#readerChap").parentElement.scrollTop=0;
+    openOverlay("reader");
+  }
+  function setFS(px){readerFS=Math.max(14,Math.min(26,px));document.documentElement.style.setProperty("--reader-fs",readerFS+"px")}
+
+  function toast(msg){var t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove("show")},2600)}
+
+  // ---- decorative QR (illustrative only) ----
+  function drawQR(){
+    var cv=$("#qr");if(!cv||!cv.getContext)return;var ctx=cv.getContext("2d");
+    var N=25,s=cv.width/N;
+    ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.fillStyle="#12172a";
+    // deterministic pseudo-pattern
+    var seed=7;function rnd(){seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff}
+    for(var y=0;y<N;y++)for(var x=0;x<N;x++){if(rnd()>0.55)ctx.fillRect(x*s,y*s,s,s)}
+    // finder squares
+    function finder(px,py){ctx.fillStyle="#fff";ctx.fillRect(px,py,7*s,7*s);ctx.fillStyle="#12172a";ctx.fillRect(px,py,7*s,s);ctx.fillRect(px,py,s,7*s);ctx.fillRect(px+6*s,py,s,7*s);ctx.fillRect(px,py+6*s,7*s,s);ctx.fillRect(px+2*s,py+2*s,3*s,3*s)}
+    finder(0,0);finder((N-7)*s,0);finder(0,(N-7)*s);
+  }
+
+  // ---- wire up ----
+  function init(){
+    render();
+    ["all","recent","unread","read"].forEach(function(v){
+      var el=$("#c-"+v);if(!el)return;
+      var n=v==="all"?BOOKS.length:(v==="recent"?BOOKS.filter(function(b){return b.recent}).length:(v==="unread"?BOOKS.filter(function(b){return !b.read}).length:BOOKS.filter(function(b){return b.read}).length));
+      el.textContent=n;
+    });
+    $("#h-books").textContent=BOOKS.length;
+
+    document.querySelectorAll(".side .nav button").forEach(function(btn){
+      btn.addEventListener("click",function(){setView(btn.dataset.view)});
+    });
+    $("#seg").addEventListener("click",function(e){
+      var b=e.target.closest("button");if(!b)return;
+      state.sort=b.dataset.sort;
+      $("#seg").querySelectorAll("button").forEach(function(x){x.classList.toggle("active",x===b)});
+      render();
+    });
+    $("#q").addEventListener("input",function(e){state.q=e.target.value;render()});
+
+    $("#signin").addEventListener("click",function(){closeOverlay("login");toast("Welcome back, admin — remember to change your password!")});
+    $("#p").addEventListener("keydown",function(e){if(e.key==="Enter")$("#signin").click()});
+
+    $("#detailClose").addEventListener("click",function(){closeOverlay("detail")});
+    $("#readerClose").addEventListener("click",function(){closeOverlay("reader")});
+    $("#opdsClose").addEventListener("click",function(){closeOverlay("opds")});
+    $("#opdsBtn").addEventListener("click",function(){openOverlay("opds")});
+    $("#fsUp").addEventListener("click",function(){setFS(readerFS+2)});
+    $("#fsDown").addEventListener("click",function(){setFS(readerFS-2)});
+    $("#opdsCopy").addEventListener("click",function(){toast("Copied the OPDS URL — paste it into your reading app.")});
+
+    // close overlay on backdrop click
+    document.querySelectorAll(".overlay").forEach(function(o){
+      if(o.id==="login")return;
+      o.addEventListener("click",function(e){if(e.target===o)o.classList.remove("show")});
+    });
+    document.addEventListener("keydown",function(e){if(e.key==="Escape"){document.querySelectorAll(".overlay.show").forEach(function(o){if(o.id!=="login")o.classList.remove("show")})}});
+
+    // theme toggle
+    $("#themeBtn").addEventListener("click",function(){
+      var cur=document.documentElement.getAttribute("data-theme");
+      var next=cur==="dark"?"light":(cur==="light"?"dark":(matchMedia("(prefers-color-scheme: dark)").matches?"light":"dark"));
+      document.documentElement.setAttribute("data-theme",next);
+    });
+
+    drawQR();
+  }
+  if(document.readyState!=="loading")init();else document.addEventListener("DOMContentLoaded",init);
+})();
+</script>
+</body>
+</html>
